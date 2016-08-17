@@ -1,3 +1,6 @@
 [submodule "rtems"]
 	path = rtems
 	url = https://github.com/grisp-org/rtems
+[submodule "rtems-libbsd"]
+	path = rtems-libbsd
+	url = https://github.com/grisp-org/rtems-libbsd
