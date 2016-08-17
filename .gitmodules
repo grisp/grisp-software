@@ -1,0 +1,3 @@
+[submodule "rtems"]
+	path = rtems
+	url = https://github.com/grisp-org/rtems
