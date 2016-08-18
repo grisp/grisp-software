@@ -59,3 +59,11 @@ cd "${BUILD_DIR}"
 
 # Make
 make ${make_targets}
+
+# Generate .mk file
+mkdir -p "${PREFIX}/make/custom/"
+cat "${PROJECTDIR}/build/src/bsp.mk" | \
+	sed 	-e "s/##RTEMS_API##/$RTEMS_VERSION/g" \
+		-e "s/##RTEMS_BSP##/$BSP_NAME/g" \
+		-e "s/##RTEMS_CPU##/$RTEMS_CPU/g" \
+	> "${PREFIX}/make/custom/${BSP_NAME}.mk"
