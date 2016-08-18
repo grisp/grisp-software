@@ -10,7 +10,7 @@ SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
 # configuration
-ARCH="arm"
+RTEMS_CPU="arm"
 RTEMS_VERSION="4.12"
 PREFIX="${PROJECTDIR}/rtems-install/rtems-${RTEMS_VERSION}/"
 LOGDIR="${PROJECTDIR}/build/"
@@ -29,8 +29,8 @@ fi
 
 cd "${PROJECTDIR}/rtems-source-builder/rtems"
 ../source-builder/sb-set-builder \
-	--log="${LOGDIR}/rsb-${ARCH}-${NOW}.log" \
+	--log="${LOGDIR}/rsb-${RTEMS_CPU}-${NOW}.log" \
 	--prefix="${PREFIX}" \
 	--no-clean \
 	--without-rtems \
-	"${RTEMS_VERSION}/rtems-${ARCH}"
+	"${RTEMS_VERSION}/rtems-${RTEMS_CPU}"

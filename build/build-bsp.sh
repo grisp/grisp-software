@@ -13,9 +13,9 @@ PROJECTDIR="${SCRIPTDIR}/../"
 BSP_NAME="atsamv"
 SOURCE_DIR="${PROJECTDIR}/rtems"
 BUILD_DIR="${PROJECTDIR}/build/b-$BSP_NAME"
-ARCH="arm"
+RTEMS_CPU="arm"
 RTEMS_VERSION="4.12"
-TARGET="${ARCH}-rtems${RTEMS_VERSION}"
+TARGET="${RTEMS_CPU}-rtems${RTEMS_VERSION}"
 PREFIX="${PROJECTDIR}/rtems-install/rtems-${RTEMS_VERSION}/"
 CONFIG_OPT=( \
 	"--disable-tests" \
