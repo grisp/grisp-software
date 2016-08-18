@@ -18,11 +18,6 @@ LOGDIR="${PROJECTDIR}/build/"
 NOW="$(date +%Y%m%d_%H%M%S)"
 export PATH="${PREFIX}/bin:${PATH}"
 
-# init git submodules
-cd "${PROJECTDIR}"
-git submodule init
-git submodule update
-
 # Build tools using source builder
 cd "${PROJECTDIR}/rtems-source-builder"
 ./source-builder/sb-check
