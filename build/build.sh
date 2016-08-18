@@ -21,4 +21,4 @@ cd "${PROJECTDIR}/rtems"
 # build parts
 cd "${PROJECTDIR}"
 "${PROJECTDIR}/build/build-toolchain.sh"
-"${PROJECTDIR}/build/build-bsp.sh"
+"${PROJECTDIR}/build/build-bsp.sh" install
