@@ -31,9 +31,12 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 #include <rtems.h>
+#include <rtems/shell.h>
+#include <rtems/console.h>
+
+#include <bsp.h>
 
 #include <grisp/pin-config.h>
 
@@ -44,18 +47,28 @@ const uint32_t atsam_matrix_ccfg_sysio = GRISP_MATRIX_CCFG_SYSIO;
 static void
 Init(rtems_task_argument arg)
 {
+	rtems_status_code sc;
+
 	(void)arg;
 
-	printf("bootloader\n");
-
-#warning TODO
+	sc = rtems_shell_init(
+		"SHLL",
+		RTEMS_MINIMUM_STACK_SIZE,
+		10,
+		CONSOLE_DEVICE_NAME,
+		false,
+		true,
+		NULL
+	);
+	assert(sc == RTEMS_SUCCESSFUL);
 
 	exit(0);
 }
 
-#define CONFIGURE_MICROSECONDS_PER_TICK 1000
 #define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
 #define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER
+#define CONFIGURE_USE_IMFS_AS_BASE_FILESYSTEM
+#define CONFIGURE_MICROSECONDS_PER_TICK 1000
 #define CONFIGURE_UNIFIED_WORK_AREAS
 #define CONFIGURE_UNLIMITED_OBJECTS
 #define CONFIGURE_STACK_CHECKER_ENABLED
@@ -63,3 +76,11 @@ Init(rtems_task_argument arg)
 #define CONFIGURE_INIT
 
 #include <rtems/confdefs.h>
+
+#define CONFIGURE_SHELL_COMMANDS_INIT
+#define CONFIGURE_SHELL_COMMANDS_ALL
+#define CONFIGURE_SHELL_NO_COMMAND_MKRFS
+#define CONFIGURE_SHELL_NO_COMMAND_FDISK
+#define CONFIGURE_SHELL_NO_COMMAND_DEBUGRFS
+
+#include <rtems/shellconfig.h>
