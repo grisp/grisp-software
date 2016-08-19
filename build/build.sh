@@ -15,6 +15,9 @@ source "${SCRIPTDIR}/configuration.sh"
 cd "${PROJECTDIR}"
 git submodule init
 git submodule update
+cd "${LIBBSD_SOURCE_DIR}"
+git submodule init
+git submodule update rtems_waf
 
 # bootstrap rtems
 cd "${RTEMS_SOURCE_DIR}"

@@ -9,6 +9,7 @@ TARGET="${RTEMS_CPU}-rtems${RTEMS_VERSION}"
 PREFIX="${PROJECTDIR}/rtems-install/rtems-${RTEMS_VERSION}/"
 
 RTEMS_SOURCE_DIR="${PROJECTDIR}/rtems"
+LIBBSD_SOURCE_DIR="${PROJECTDIR}/rtems-libbsd"
 BSP_CONFIG_OPT=( \
 	"--disable-tests" \
 	"--disable-networking" \
