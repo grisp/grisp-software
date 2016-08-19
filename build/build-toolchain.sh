@@ -10,11 +10,8 @@ SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
 # configuration
-RTEMS_CPU="arm"
-RTEMS_VERSION="4.12"
-PREFIX="${PROJECTDIR}/rtems-install/rtems-${RTEMS_VERSION}/"
+source "${SCRIPTDIR}/configuration.sh"
 LOGDIR="${PROJECTDIR}/build/"
-
 NOW="$(date +%Y%m%d_%H%M%S)"
 export PATH="${PREFIX}/bin:${PATH}"
 

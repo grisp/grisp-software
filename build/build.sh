@@ -9,16 +9,18 @@ set -e -u
 SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
+source "${SCRIPTDIR}/configuration.sh"
+
 # init git submodules
 cd "${PROJECTDIR}"
 git submodule init
 git submodule update
 
 # bootstrap rtems
-cd "${PROJECTDIR}/rtems"
+cd "${RTEMS_SOURCE_DIR}"
 ./bootstrap
 
 # build parts
 cd "${PROJECTDIR}"
-"${PROJECTDIR}/build/build-toolchain.sh"
-"${PROJECTDIR}/build/build-bsp.sh" install
+"${SCRIPTDIR}/build-toolchain.sh"
+"${SCRIPTDIR}/build-bsp.sh" install

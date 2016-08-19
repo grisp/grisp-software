@@ -10,22 +10,8 @@ SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
 # Configuration
-BSP_NAME="atsamv"
-SOURCE_DIR="${PROJECTDIR}/rtems"
+source "${SCRIPTDIR}/configuration.sh"
 BUILD_DIR="${PROJECTDIR}/build/b-$BSP_NAME"
-RTEMS_CPU="arm"
-RTEMS_VERSION="4.12"
-TARGET="${RTEMS_CPU}-rtems${RTEMS_VERSION}"
-PREFIX="${PROJECTDIR}/rtems-install/rtems-${RTEMS_VERSION}/"
-CONFIG_OPT=( \
-	"--disable-tests" \
-	"--disable-networking" \
-	"--enable-chip=samv71q21" \
-	"ATSAM_CONSOLE_DEVICE_TYPE=1" \
-	"ATSAM_CONSOLE_DEVICE_INDEX=2" \
-	"ATSAM_MEMORY_QSPIFLASH_SIZE=0x0")
-
-# Path
 export PATH="${PREFIX}/bin:${PATH}"
 
 # Evaluate options
@@ -50,12 +36,12 @@ mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
 # Configure
-"${SOURCE_DIR}/configure" \
+"${RTEMS_SOURCE_DIR}/configure" \
 	"--target=${TARGET}" \
 	"--prefix=${PREFIX}" \
 	"--enable-rtemsbsp=${BSP_NAME}" \
 	"--enable-maintainer-mode" \
-	"${CONFIG_OPT[@]}"
+	"${BSP_CONFIG_OPT[@]}"
 
 # Make
 make ${make_targets}
