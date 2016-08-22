@@ -61,7 +61,7 @@
   {PIO_PA25D_MCCK, PIOA, ID_PIOA, PIO_PERIPH_D, PIO_DEFAULT},                 \
   {PIO_PA26C_MCDA2 | PIO_PA27C_MCDA3 | PIO_PA28C_MCCDA | PIO_PA30C_MCDA0 |    \
       PIO_PA31C_MCDA1, PIOA, ID_PIOA, PIO_PERIPH_C, PIO_DEFAULT},             \
-  {PIO_PD18A_SDCS, PIOD, ID_PIOD, PIO_PERIPH_A, PIO_DEFAULT}, /* SD_CD */     \
+  {PIO_PD18, PIOD, ID_PIOD, PIO_INPUT, PIO_DEFAULT}, /* DETECT */             \
                                                                               \
   /* UART */                                                                  \
   {PIO_PB0C_RXD0 | PIO_PB1C_TXD0 | PIO_PB2C_CTS0 | PIO_PB3C_RTS0,             \
