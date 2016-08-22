@@ -27,3 +27,4 @@ cd "${RTEMS_SOURCE_DIR}"
 cd "${PROJECTDIR}"
 "${SCRIPTDIR}/build-toolchain.sh"
 "${SCRIPTDIR}/build-bsp.sh" clean install
+"${SCRIPTDIR}/build-libinih.sh"

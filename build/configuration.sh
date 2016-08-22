@@ -10,6 +10,8 @@ PREFIX="${PROJECTDIR}/rtems-install/rtems-${RTEMS_VERSION}/"
 
 RTEMS_SOURCE_DIR="${PROJECTDIR}/rtems"
 LIBBSD_SOURCE_DIR="${PROJECTDIR}/rtems-libbsd"
+LIBINIH_SOURCE_DIR="${PROJECTDIR}/libinih"
+
 BSP_CONFIG_OPT=( \
 	"--disable-tests" \
 	"--disable-networking" \
