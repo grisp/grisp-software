@@ -28,3 +28,4 @@ cd "${PROJECTDIR}"
 "${SCRIPTDIR}/build-toolchain.sh"
 "${SCRIPTDIR}/build-bsp.sh" clean install
 "${SCRIPTDIR}/build-libinih.sh"
+"${SCRIPTDIR}/build-libgrisp.sh"
