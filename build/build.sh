@@ -26,4 +26,4 @@ cd "${RTEMS_SOURCE_DIR}"
 # build parts
 cd "${PROJECTDIR}"
 "${SCRIPTDIR}/build-toolchain.sh"
-"${SCRIPTDIR}/build-bsp.sh" install
+"${SCRIPTDIR}/build-bsp.sh" clean install
