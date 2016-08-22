@@ -1,4 +1,3 @@
 build/*.log
-build/b-*
-apps/*/b-*
+b-*
 rtems-install
