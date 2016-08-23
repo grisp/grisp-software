@@ -29,7 +29,22 @@
  * SUCH DAMAGE.
  */
 
+#ifndef GRISP_PIN_CONFIG_H
+#define GRISP_PIN_CONFIG_H
+
+#include <rtems.h>
 #include <bsp/pin-config.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+#define GRISP_LED_1R	{PIO_PA24, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
+#define GRISP_LED_1G	{PIO_PA22, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
+#define GRISP_LED_1B	{PIO_PA23, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
+#define GRISP_LED_2R	{PIO_PA21, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
+#define GRISP_LED_2G	{PIO_PA19, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
+#define GRISP_LED_2B	{PIO_PA17, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
 
 #define GRISP_PIN_CONFIG                                                      \
   /* Console */                                                               \
@@ -82,7 +97,13 @@
       PIOC, ID_PIOC, PIO_INPUT, PIO_PULLUP},                                  \
                                                                               \
   /* LEDs */                                                                  \
-  {PIO_PA24 | PIO_PA23 | PIO_PA22 | PIO_PA21 | PIO_PA19 | PIO_PA17,           \
-      PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT},
+  GRISP_LED_1R, GRISP_LED_1G, GRISP_LED_1B,                                   \
+  GRISP_LED_2R, GRISP_LED_2G, GRISP_LED_2B
 
 #define GRISP_MATRIX_CCFG_SYSIO 0x20400000
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* GRISP_PIN_CONFIG_H */
