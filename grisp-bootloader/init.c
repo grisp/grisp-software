@@ -35,7 +35,10 @@
 #include <sys/stat.h>
 
 #include <rtems.h>
+#include <rtems/bdbuf.h>
 #include <rtems/console.h>
+#include <rtems/malloc.h>
+#include <rtems/media.h>
 #include <rtems/shell.h>
 #include <rtems/stringto.h>
 
@@ -46,7 +49,13 @@
 
 #include <inih/ini.h>
 
-#define SHELL_STACK_SIZE (8 * 1024)
+#define STACK_SIZE_SHELL (8 * 1024)
+#define STACK_SIZE_MEDIA_SERVER (32 * 1024)
+
+#define PRIO_MEDIA_SERVER 200
+#define PRIO_SHELL 10
+
+#define EVT_MOUNTED RTEMS_EVENT_9
 
 const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
@@ -56,7 +65,8 @@ static const char ini_file[] = "/sd/grisp.ini";
 static int timeout_in_seconds = 3;
 static char image_path[PATH_MAX + 1] = "/sd/grisp.bin";
 
-static rtems_id led_timer_id;
+static rtems_id led_timer_id = RTEMS_INVALID_ID;
+static rtems_id wait_mounted_task_id = RTEMS_INVALID_ID;
 
 static int
 ini_value_copy(void *dst, size_t dst_size, const char *value)
@@ -174,6 +184,118 @@ led_not_ok(void)
 	assert(sc == RTEMS_SUCCESSFUL);
 }
 
+static rtems_status_code
+media_listener(rtems_media_event event, rtems_media_state state,
+    const char *src, const char *dest, void *arg)
+{
+	printf(
+		"media listener: event = %s, state = %s, src = %s",
+		rtems_media_event_description(event),
+		rtems_media_state_description(state),
+		src
+	);
+
+	if (dest != NULL) {
+		printf(", dest = %s", dest);
+	}
+
+	if (arg != NULL) {
+		printf(", arg = %p\n", arg);
+	}
+
+	printf("\n");
+
+	if (event == RTEMS_MEDIA_EVENT_MOUNT &&
+	    state == RTEMS_MEDIA_STATE_SUCCESS) {
+		rtems_event_send(wait_mounted_task_id, EVT_MOUNTED);
+	}
+
+	return RTEMS_SUCCESSFUL;
+}
+
+static rtems_status_code
+init_sd_card(void)
+{
+	rtems_status_code sc;
+	const rtems_interval max_mount_time = 3000 /
+	    rtems_configuration_get_milliseconds_per_tick();
+	rtems_event_set out;
+
+	wait_mounted_task_id = rtems_task_self();
+
+	sc = rtems_bdbuf_init();
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	sc = rtems_media_initialize();
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	sc = rtems_media_listener_add(media_listener, NULL);
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	sc = rtems_media_server_initialize(
+	    PRIO_MEDIA_SERVER,
+	    STACK_SIZE_MEDIA_SERVER,
+	    RTEMS_DEFAULT_MODES,
+	    RTEMS_DEFAULT_ATTRIBUTES
+	    );
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	sc = rtems_event_receive(EVT_MOUNTED, RTEMS_WAIT, max_mount_time, &out);
+	assert(sc == RTEMS_SUCCESSFUL || sc == RTEMS_TIMEOUT);
+
+	return sc;
+}
+
+static void print_status(bool ok)
+{
+	if (ok) {
+		printf("done\n");
+	} else {
+		printf("failed\n");
+	}
+}
+
+static void
+load_via_file(const char *file)
+{
+	static uint8_t *buffer;
+
+	size_t buffer_size = 127 * 1024 * 1024;
+	if (buffer == NULL) {
+		buffer = rtems_heap_allocate_aligned_with_boundary(buffer_size, 64 * 1024 * 1024, 0);
+		assert(buffer != NULL);
+	}
+
+	printf("boot: open file \"%s\"... ", file);
+	int fd = open(file, O_RDONLY);
+	bool ok = fd >= 0;
+	print_status(ok);
+	if (ok) {
+		printf("boot: read file \"%s\"... ", file);
+		ssize_t in = read(fd, buffer, buffer_size);
+		printf("received %zi bytes\n", in);
+
+		int rv = close(fd);
+		assert(rv == 0);
+
+		ssize_t entry = 0x10000;
+		if (in > entry) {
+			void (*start) ( void ) = (void *)(buffer + entry);
+			rtems_interrupt_level level;
+
+			rtems_status_code sc = rtems_timer_cancel(led_timer_id);
+			assert(sc == RTEMS_SUCCESSFUL);
+
+			grisp_led_set1(false, true, false);
+			sleep(1);
+
+			rtems_interrupt_disable( level );
+			(void) level; /* Avoid warning */
+			( *start )();
+		}
+	}
+}
+
 static void
 evaluate_ini_file(const char *filename)
 {
@@ -210,8 +332,8 @@ start_shell(void)
 {
 	rtems_status_code sc = rtems_shell_init(
 		"SHLL",
-		SHELL_STACK_SIZE,
-		10,
+		STACK_SIZE_SHELL,
+		PRIO_SHELL,
 		CONSOLE_DEVICE_NAME,
 		false,
 		true,
@@ -230,22 +352,33 @@ static void
 Init(rtems_task_argument arg)
 {
 	bool service_mode_requested;
+	rtems_status_code sc;
 
 	(void)arg;
 
 	init_led();
-	evaluate_ini_file(ini_file);
+	sc = init_sd_card();
 
-	if (timeout_in_seconds == 0) {
-		service_mode_requested = false;
+	if(sc == RTEMS_SUCCESSFUL) {
+		evaluate_ini_file(ini_file);
+
+		if (timeout_in_seconds == 0) {
+			service_mode_requested = false;
+		} else {
+			service_mode_requested = wait_for_user_input();
+		}
+
+		if (!service_mode_requested) {
+			const char *image = image_path;
+			if (strlen(image) > 0) {
+				load_via_file(image);
+			}
+
+			/* Fallback: Show error and star service mode */
+			led_not_ok();
+		}
 	} else {
-		service_mode_requested = wait_for_user_input();
-	}
-
-	if (!service_mode_requested) {
-		/* FIXME: boot application */
-
-		/* Fallback: Show error and star service mode */
+		printf("SD is not mounted\n");
 		led_not_ok();
 	}
 
@@ -256,6 +389,7 @@ Init(rtems_task_argument arg)
 
 #define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
 #define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER
+#define CONFIGURE_APPLICATION_NEEDS_LIBBLOCK
 #define CONFIGURE_USE_IMFS_AS_BASE_FILESYSTEM
 #define CONFIGURE_MICROSECONDS_PER_TICK 1000
 #define CONFIGURE_UNIFIED_WORK_AREAS
@@ -268,8 +402,5 @@ Init(rtems_task_argument arg)
 
 #define CONFIGURE_SHELL_COMMANDS_INIT
 #define CONFIGURE_SHELL_COMMANDS_ALL
-#define CONFIGURE_SHELL_NO_COMMAND_MKRFS
-#define CONFIGURE_SHELL_NO_COMMAND_FDISK
-#define CONFIGURE_SHELL_NO_COMMAND_DEBUGRFS
 
 #include <rtems/shellconfig.h>
