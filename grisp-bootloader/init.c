@@ -35,10 +35,12 @@
 #include <sys/stat.h>
 
 #include <rtems.h>
+#include <rtems/bsd/bsd.h>
 #include <rtems/bdbuf.h>
 #include <rtems/console.h>
 #include <rtems/malloc.h>
 #include <rtems/media.h>
+#include <rtems/score/armv7m.h>
 #include <rtems/shell.h>
 #include <rtems/stringto.h>
 
@@ -49,13 +51,21 @@
 
 #include <inih/ini.h>
 
-#define STACK_SIZE_SHELL (8 * 1024)
-#define STACK_SIZE_MEDIA_SERVER (32 * 1024)
+#define STACK_SIZE_INIT_TASK	(32 * 1024)
+#define STACK_SIZE_SHELL	(32 * 1024)
+#define STACK_SIZE_MEDIA_SERVER	(32 * 1024)
 
-#define PRIO_MEDIA_SERVER 200
-#define PRIO_SHELL 10
+#define PRIO_INIT_TASK		(RTEMS_MAXIMUM_PRIORITY - 1)
+#define PRIO_MEDIA_SERVER	200
+#define PRIO_SHELL		10
 
-#define EVT_MOUNTED RTEMS_EVENT_9
+#define EVT_MOUNTED		RTEMS_EVENT_9
+
+/* NOTE: With the default linker commands, only the internal SRAM is used. So it
+ * is save to overwrite the external one. */
+#define RESET_VECTOR_OFFSET	0x00000004
+static char *app_begin = atsam_memory_sdram_begin;
+static char *app_end = atsam_memory_sdram_end;
 
 const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
@@ -214,12 +224,23 @@ media_listener(rtems_media_event event, rtems_media_state state,
 }
 
 static rtems_status_code
-init_sd_card(void)
+wait_for_sd(void)
 {
 	rtems_status_code sc;
 	const rtems_interval max_mount_time = 3000 /
 	    rtems_configuration_get_milliseconds_per_tick();
 	rtems_event_set out;
+
+	sc = rtems_event_receive(EVT_MOUNTED, RTEMS_WAIT, max_mount_time, &out);
+	assert(sc == RTEMS_SUCCESSFUL || sc == RTEMS_TIMEOUT);
+
+	return sc;
+}
+
+static void
+init_sd_card(void)
+{
+	rtems_status_code sc;
 
 	wait_mounted_task_id = rtems_task_self();
 
@@ -239,14 +260,10 @@ init_sd_card(void)
 	    RTEMS_DEFAULT_ATTRIBUTES
 	    );
 	assert(sc == RTEMS_SUCCESSFUL);
-
-	sc = rtems_event_receive(EVT_MOUNTED, RTEMS_WAIT, max_mount_time, &out);
-	assert(sc == RTEMS_SUCCESSFUL || sc == RTEMS_TIMEOUT);
-
-	return sc;
 }
 
-static void print_status(bool ok)
+static void
+print_status(bool ok)
 {
 	if (ok) {
 		printf("done\n");
@@ -255,43 +272,62 @@ static void print_status(bool ok)
 	}
 }
 
+static void _ARMV7M_Systick_cleanup(void)
+{
+	volatile ARMV7M_Systick *systick = _ARMV7M_Systick;
+	systick->csr = 0;
+}
+
+static void
+jump_to_app(void *start)
+{
+	rtems_interrupt_level level;
+
+	rtems_interrupt_disable(level);
+	(void)level;
+	rtems_cache_disable_instruction();
+	rtems_cache_disable_data();
+	rtems_cache_invalidate_entire_instruction();
+	rtems_cache_invalidate_entire_data();
+	_ARMV7M_Systick_cleanup();
+
+	void(*foo)(void) = (void(*)(void))(start);
+	foo();
+}
+
 static void
 load_via_file(const char *file)
 {
-	static uint8_t *buffer;
-
-	size_t buffer_size = 127 * 1024 * 1024;
-	if (buffer == NULL) {
-		buffer = rtems_heap_allocate_aligned_with_boundary(buffer_size, 64 * 1024 * 1024, 0);
-		assert(buffer != NULL);
-	}
+	int fd;
+	bool ok;
+	ssize_t in;
+	int rv;
+	size_t max_app_size = (size_t) (app_end - app_begin);
+	uint32_t *reset_vector = (void *)(app_begin + RESET_VECTOR_OFFSET);
+	void *app_start;
 
 	printf("boot: open file \"%s\"... ", file);
-	int fd = open(file, O_RDONLY);
-	bool ok = fd >= 0;
+	fd = open(file, O_RDONLY);
+	ok = (fd >= 0);
 	print_status(ok);
 	if (ok) {
 		printf("boot: read file \"%s\"... ", file);
-		ssize_t in = read(fd, buffer, buffer_size);
+		in = read(fd, app_begin, max_app_size);
 		printf("received %zi bytes\n", in);
 
-		int rv = close(fd);
+		rv = close(fd);
 		assert(rv == 0);
 
-		ssize_t entry = 0x10000;
-		if (in > entry) {
-			void (*start) ( void ) = (void *)(buffer + entry);
-			rtems_interrupt_level level;
-
+		if (in > (ssize_t)(RESET_VECTOR_OFFSET + sizeof(reset_vector))){
 			rtems_status_code sc = rtems_timer_cancel(led_timer_id);
 			assert(sc == RTEMS_SUCCESSFUL);
 
 			grisp_led_set1(false, true, false);
 			sleep(1);
 
-			rtems_interrupt_disable( level );
-			(void) level; /* Avoid warning */
-			( *start )();
+			app_start = (void *)(*reset_vector & 0xFFFFFFFE);
+
+			jump_to_app(app_start);
 		}
 	}
 }
@@ -353,12 +389,30 @@ Init(rtems_task_argument arg)
 {
 	bool service_mode_requested;
 	rtems_status_code sc;
+	rtems_task_priority oldprio;
 
 	(void)arg;
 
 	init_led();
-	sc = init_sd_card();
+	init_sd_card();
 
+	/* Let other tasks run to complete background work */
+	sc = rtems_task_set_priority(RTEMS_SELF,
+	    (rtems_task_priority)PRIO_INIT_TASK, &oldprio);
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	sc = rtems_bsd_initialize();
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	/* Let the callout timer allocate its resources */
+	sc = rtems_task_wake_after( 2 );
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	sc = rtems_bsd_initialize();
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	/* Wait for the SD card */
+	sc = wait_for_sd();
 	if(sc == RTEMS_SUCCESSFUL) {
 		evaluate_ini_file(ini_file);
 
@@ -378,7 +432,7 @@ Init(rtems_task_argument arg)
 			led_not_ok();
 		}
 	} else {
-		printf("SD is not mounted\n");
+		printf("ERROR: SD could not be mounted after timeout\n");
 		led_not_ok();
 	}
 
@@ -387,20 +441,53 @@ Init(rtems_task_argument arg)
 	exit(0);
 }
 
+/*
+ * Configure LibBSD.
+ */
+#define RTEMS_BSD_CONFIG_BSP_CONFIG
+#define RTEMS_BSD_CONFIG_INIT
+
+#include <machine/rtems-bsd-config.h>
+
+/*
+ * Configure RTEMS.
+ */
+#define CONFIGURE_MICROSECONDS_PER_TICK 1000
+
 #define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
 #define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER
+#define CONFIGURE_APPLICATION_NEEDS_STUB_DRIVER
+#define CONFIGURE_APPLICATION_NEEDS_ZERO_DRIVER
 #define CONFIGURE_APPLICATION_NEEDS_LIBBLOCK
+
 #define CONFIGURE_USE_IMFS_AS_BASE_FILESYSTEM
-#define CONFIGURE_MICROSECONDS_PER_TICK 1000
-#define CONFIGURE_UNIFIED_WORK_AREAS
+#define CONFIGURE_FILESYSTEM_DOSFS
+
 #define CONFIGURE_UNLIMITED_OBJECTS
+#define CONFIGURE_UNIFIED_WORK_AREAS
+
+#define CONFIGURE_INIT_TASK_STACK_SIZE STACK_SIZE_INIT_TASK
+#define CONFIGURE_INIT_TASK_INITIAL_MODES RTEMS_DEFAULT_MODES
+#define CONFIGURE_INIT_TASK_ATTRIBUTES RTEMS_FLOATING_POINT
+
+#define CONFIGURE_BDBUF_BUFFER_MAX_SIZE (64 * 1024)
+#define CONFIGURE_BDBUF_MAX_READ_AHEAD_BLOCKS 4
+#define CONFIGURE_BDBUF_CACHE_MEMORY_SIZE (1 * 1024 * 1024)
+
 #define CONFIGURE_STACK_CHECKER_ENABLED
+
 #define CONFIGURE_RTEMS_INIT_TASKS_TABLE
 #define CONFIGURE_INIT
 
 #include <rtems/confdefs.h>
 
+/*
+ * Configure Shell.
+ */
+#include <rtems/netcmds-config.h>
 #define CONFIGURE_SHELL_COMMANDS_INIT
 #define CONFIGURE_SHELL_COMMANDS_ALL
+#define CONFIGURE_SHELL_USER_COMMANDS \
+  &rtems_shell_BSD_Command
 
 #include <rtems/shellconfig.h>
