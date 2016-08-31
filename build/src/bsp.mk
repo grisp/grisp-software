@@ -15,7 +15,7 @@ include $(RTEMS_ROOT)/make/custom/$(RTEMS_BSP).cfg
 
 DEPFLAGS = -MT $@ -MD -MP -MF $(basename $@).d
 SYSFLAGS = -B $(PROJECT_LIB) -specs bsp_specs -qrtems
-WARNFLAGS = -Wall -Wextra -Wconversion -Wformat-security -Wformat=2 -Wshadow -Wcast-qual -Wcast-align -Wredundant-decls -Werror
+WARNFLAGS = -Wall -Wextra -Wconversion -Wformat-security -Wformat=2 -Wshadow -Wcast-qual -Wcast-align -Wredundant-decls
 CWARNFLAGS = $(WARNFLAGS) -Wstrict-prototypes -Wbad-function-cast
 OPTFLAGS = $(CFLAGS_OPTIMIZE_V)
 
