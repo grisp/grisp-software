@@ -144,16 +144,22 @@ led_timer(rtems_id timer, void *arg)
 		}
 	}
 
+	is_on = !is_on;
+
 	grisp_led_set1(r, g, b);
 }
 
 static void
-init_led(void)
+init_led_early(void)
+{
+	grisp_led_set1(false, true, true);
+	grisp_led_set2(false, false, false);
+}
+
+static void
+init_timer_server(void)
 {
 	rtems_status_code sc;
-
-	grisp_led_set1(false, false, false);
-	grisp_led_set2(false, false, false);
 
 	sc = rtems_timer_initiate_server(
 		250,
@@ -161,6 +167,12 @@ init_led(void)
 		RTEMS_DEFAULT_ATTRIBUTES
 	);
 	assert(sc == RTEMS_SUCCESSFUL);
+}
+
+static void
+init_led_timer(void)
+{
+	rtems_status_code sc;
 
 	sc = rtems_timer_create(rtems_build_name('L', 'E', 'D', ' '),
 	    &led_timer_id);
@@ -226,6 +238,7 @@ media_listener(rtems_media_event event, rtems_media_state state,
 static rtems_status_code
 wait_for_sd(void)
 {
+	puts("waiting for SD...\n");
 	rtems_status_code sc;
 	const rtems_interval max_mount_time = 3000 /
 	    rtems_configuration_get_milliseconds_per_tick();
@@ -385,21 +398,21 @@ service_mode(void)
 }
 
 static void
-Init(rtems_task_argument arg)
+set_init_prio(void)
 {
-	bool service_mode_requested;
 	rtems_status_code sc;
 	rtems_task_priority oldprio;
-
-	(void)arg;
-
-	init_led();
-	init_sd_card();
 
 	/* Let other tasks run to complete background work */
 	sc = rtems_task_set_priority(RTEMS_SELF,
 	    (rtems_task_priority)PRIO_INIT_TASK, &oldprio);
 	assert(sc == RTEMS_SUCCESSFUL);
+}
+
+static void
+init_libbsd(void)
+{
+	rtems_status_code sc;
 
 	sc = rtems_bsd_initialize();
 	assert(sc == RTEMS_SUCCESSFUL);
@@ -410,6 +423,23 @@ Init(rtems_task_argument arg)
 
 	sc = rtems_bsd_initialize();
 	assert(sc == RTEMS_SUCCESSFUL);
+}
+
+static void
+Init(rtems_task_argument arg)
+{
+	bool service_mode_requested;
+	rtems_status_code sc;
+
+	(void)arg;
+
+	init_led_early();
+	puts("\nGRISP bootloader\n");
+	init_sd_card();
+	set_init_prio();
+	/* init_libbsd(); */
+	init_timer_server(); /* only if no libbsd */
+	init_led_timer();
 
 	/* Wait for the SD card */
 	sc = wait_for_sd();
@@ -462,6 +492,7 @@ Init(rtems_task_argument arg)
 
 #define CONFIGURE_USE_IMFS_AS_BASE_FILESYSTEM
 #define CONFIGURE_FILESYSTEM_DOSFS
+#define CONFIGURE_LIBIO_MAXIMUM_FILE_DESCRIPTORS 8
 
 #define CONFIGURE_UNLIMITED_OBJECTS
 #define CONFIGURE_UNIFIED_WORK_AREAS
@@ -470,9 +501,9 @@ Init(rtems_task_argument arg)
 #define CONFIGURE_INIT_TASK_INITIAL_MODES RTEMS_DEFAULT_MODES
 #define CONFIGURE_INIT_TASK_ATTRIBUTES RTEMS_FLOATING_POINT
 
-#define CONFIGURE_BDBUF_BUFFER_MAX_SIZE (64 * 1024)
+#define CONFIGURE_BDBUF_BUFFER_MAX_SIZE (1 * 1024)
 #define CONFIGURE_BDBUF_MAX_READ_AHEAD_BLOCKS 4
-#define CONFIGURE_BDBUF_CACHE_MEMORY_SIZE (1 * 1024 * 1024)
+#define CONFIGURE_BDBUF_CACHE_MEMORY_SIZE (64 * 1024)
 
 #define CONFIGURE_STACK_CHECKER_ENABLED
 
