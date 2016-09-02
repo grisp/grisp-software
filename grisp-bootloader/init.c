@@ -431,9 +431,6 @@ init_libbsd(void)
 	/* Let the callout timer allocate its resources */
 	sc = rtems_task_wake_after( 2 );
 	assert(sc == RTEMS_SUCCESSFUL);
-
-	sc = rtems_bsd_initialize();
-	assert(sc == RTEMS_SUCCESSFUL);
 }
 
 static void
