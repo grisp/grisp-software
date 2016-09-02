@@ -40,10 +40,15 @@
 #include <bsp.h>
 
 #include <grisp/led.h>
+#include <grisp/pin-config.h>
 
 #define STACK_SIZE_INIT_TASK	(32 * 1024)
 #define STACK_SIZE_SHELL	(32 * 1024)
 #define PRIO_SHELL		10
+
+const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
+const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
+const uint32_t atsam_matrix_ccfg_sysio = GRISP_MATRIX_CCFG_SYSIO;
 
 static rtems_id led_timer_id = RTEMS_INVALID_ID;
 
@@ -51,7 +56,7 @@ static void
 led_timer(rtems_id timer, void *arg)
 {
 	rtems_status_code sc;
-	static int state = 0x1;
+	static uint8_t state = 0x1;
 	bool r, g, b;
 
 	(void)arg;
@@ -59,7 +64,7 @@ led_timer(rtems_id timer, void *arg)
 	sc = rtems_timer_reset(timer);
 	assert(sc == RTEMS_SUCCESSFUL);
 
-	state += 1;
+	++state;
 	if (state > 0x7) {
 		state = 0x0;
 	}
