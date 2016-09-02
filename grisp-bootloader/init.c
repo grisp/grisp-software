@@ -64,6 +64,7 @@
 /* NOTE: With the default linker commands, only the internal SRAM is used. So it
  * is save to overwrite the external one. */
 #define RESET_VECTOR_OFFSET	0x00000004
+#define RESET_VECTOR_SIZE	4
 static char *app_begin = atsam_memory_sdram_begin;
 static char *app_end = atsam_memory_sdram_end;
 
@@ -309,6 +310,17 @@ jump_to_app(void *start)
 }
 
 static void
+start_app_from_ram(void)
+{
+	uint32_t *reset_vector;
+	void *app_start;
+
+	reset_vector = (void *)(app_begin + RESET_VECTOR_OFFSET);
+	app_start = (void *)(*reset_vector & 0xFFFFFFFE);
+	jump_to_app(app_start);
+}
+
+static void
 load_via_file(const char *file)
 {
 	int fd;
@@ -316,8 +328,6 @@ load_via_file(const char *file)
 	ssize_t in;
 	int rv;
 	size_t max_app_size = (size_t) (app_end - app_begin);
-	uint32_t *reset_vector = (void *)(app_begin + RESET_VECTOR_OFFSET);
-	void *app_start;
 
 	printf("boot: open file \"%s\"... ", file);
 	fd = open(file, O_RDONLY);
@@ -331,16 +341,17 @@ load_via_file(const char *file)
 		rv = close(fd);
 		assert(rv == 0);
 
-		if (in > (ssize_t)(RESET_VECTOR_OFFSET + sizeof(reset_vector))){
+		if (in > RESET_VECTOR_OFFSET + RESET_VECTOR_SIZE) {
 			rtems_status_code sc = rtems_timer_cancel(led_timer_id);
 			assert(sc == RTEMS_SUCCESSFUL);
 
 			grisp_led_set1(false, true, false);
 			sleep(1);
 
-			app_start = (void *)(*reset_vector & 0xFFFFFFFE);
+			start_app_from_ram();
 
-			jump_to_app(app_start);
+			/* Should never reach this */
+			grisp_led_set1(true, false, false);
 		}
 	}
 }
@@ -435,10 +446,11 @@ Init(rtems_task_argument arg)
 
 	init_led_early();
 	puts("\nGRISP bootloader\n");
+	// start_app_from_ram(); /* For debug only */
 	init_sd_card();
 	set_init_prio();
-	/* init_libbsd(); */
-	init_timer_server(); /* only if no libbsd */
+	init_libbsd();
+	//init_timer_server(); /* only if no libbsd */
 	init_led_timer();
 
 	/* Wait for the SD card */
@@ -496,6 +508,7 @@ Init(rtems_task_argument arg)
 
 #define CONFIGURE_UNLIMITED_OBJECTS
 #define CONFIGURE_UNIFIED_WORK_AREAS
+#define CONFIGURE_MAXIMUM_USER_EXTENSIONS 1
 
 #define CONFIGURE_INIT_TASK_STACK_SIZE STACK_SIZE_INIT_TASK
 #define CONFIGURE_INIT_TASK_INITIAL_MODES RTEMS_DEFAULT_MODES
