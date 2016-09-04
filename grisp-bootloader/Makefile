@@ -4,7 +4,7 @@ RTEMS_BSP ?= atsamv
 include $(RTEMS_ROOT)/make/custom/$(RTEMS_BSP).mk
 
 CFLAGS += -O0
-#LDFLAGS += -qnolinkcmds -T linkcmds.sdram
+LDFLAGS += -qnolinkcmds -T linkcmds.bootloader
 
 APP = $(BUILDDIR)/bootloader
 APP_PIECES = $(wildcard *.c)
