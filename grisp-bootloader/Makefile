@@ -5,6 +5,7 @@ include $(RTEMS_ROOT)/make/custom/$(RTEMS_BSP).mk
 
 CFLAGS += -O0
 LDFLAGS += -qnolinkcmds -T linkcmds.bootloader
+#LDFLAGS += -qnolinkcmds -T linkcmds.sdram
 
 APP = $(BUILDDIR)/bootloader
 APP_PIECES = $(wildcard *.c)

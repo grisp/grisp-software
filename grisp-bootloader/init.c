@@ -74,9 +74,9 @@ const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
 const uint32_t atsam_matrix_ccfg_sysio = GRISP_MATRIX_CCFG_SYSIO;
 
-static const char ini_file[] = "/sd/grisp.ini";
+static const char ini_file[] = "/media/mmcsd-0-0/grisp.ini";
 static int timeout_in_seconds = 3;
-static char image_path[PATH_MAX + 1] = "/sd/grisp.bin";
+static char image_path[PATH_MAX + 1] = "/media/mmcsd-0-0/grisp.bin";
 
 static rtems_id led_timer_id = RTEMS_INVALID_ID;
 static rtems_id wait_mounted_task_id = RTEMS_INVALID_ID;
@@ -157,19 +157,6 @@ init_led_early(void)
 {
 	grisp_led_set1(false, true, true);
 	grisp_led_set2(false, false, false);
-}
-
-static void
-init_timer_server(void)
-{
-	rtems_status_code sc;
-
-	sc = rtems_timer_initiate_server(
-		250,
-		RTEMS_MINIMUM_STACK_SIZE,
-		RTEMS_DEFAULT_ATTRIBUTES
-	);
-	assert(sc == RTEMS_SUCCESSFUL);
 }
 
 static void
@@ -445,11 +432,9 @@ Init(rtems_task_argument arg)
 
 	init_led_early();
 	puts("\nGRISP bootloader\n");
-	// start_app_from_ram(); /* For debug only */
 	init_sd_card();
 	set_init_prio();
 	init_libbsd();
-	//init_timer_server(); /* only if no libbsd */
 	init_led_timer();
 
 	/* Wait for the SD card */
