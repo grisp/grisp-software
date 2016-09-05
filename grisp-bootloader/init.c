@@ -335,7 +335,7 @@ load_via_file(const char *file)
 			assert(sc == RTEMS_SUCCESSFUL);
 
 			grisp_led_set1(false, true, false);
-			sleep(1);
+			/* sleep(1); */
 
 			start_app_from_ram();
 

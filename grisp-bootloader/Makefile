@@ -3,7 +3,7 @@ RTEMS_BSP ?= atsamv
 
 include $(RTEMS_ROOT)/make/custom/$(RTEMS_BSP).mk
 
-CFLAGS += -O0
+#CFLAGS += -O0
 LDFLAGS += -qnolinkcmds -T linkcmds.bootloader
 #LDFLAGS += -qnolinkcmds -T linkcmds.sdram
 
