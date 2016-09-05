@@ -19,7 +19,15 @@ $(BUILDDIR):
 $(APP).exe: $(APP_OBJS)
 	$(CCLINK) $^ -lgrisp -o $@
 
+$(APP).bin: $(APP).exe
+	$(OBJCOPY) -O binary $^ $@
+
+bin: all $(APP).bin
+
 clean:
 	rm -rf $(BUILDDIR)
+
+debugoutput:
+	echo $(PATH)
 
 -include $(APP_DEPS)
