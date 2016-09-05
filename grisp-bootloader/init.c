@@ -305,7 +305,7 @@ start_app_from_ram(void)
 	void *app_start;
 
 	reset_vector = (void *)(app_begin + RESET_VECTOR_OFFSET);
-	app_start = (void *)(*reset_vector & 0xFFFFFFFE);
+	app_start = (void *)(*reset_vector);
 	jump_to_app(app_start);
 }
 
