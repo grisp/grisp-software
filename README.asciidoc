@@ -40,7 +40,7 @@ directory.
 timeout_in_seconds = 3
 
 [file]
-image_path = /ffs/br_uid.bin
+image_path = /media/mmcsd-0-0/grisp.bin
 --------------------------------------------------
 
 All values are optional and in case something is missing default values will be
