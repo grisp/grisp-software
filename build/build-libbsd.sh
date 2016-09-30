@@ -27,6 +27,7 @@ cp "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.sdram" "${PREFIX}/${TARGET}/${B
 waf configure \
 	--prefix="${PREFIX}" \
 	--rtems-bsps="${RTEMS_CPU}/${BSP_NAME}"
+waf
 waf install
 
 # part 2 of ugly workaround to build the tests with external RAM
