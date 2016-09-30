@@ -3,8 +3,11 @@ GRISP
 
 == Prerequisites
 
-- the +waf+ build tools needs to be installed and in path (see https://git.rtems.org/rtems-libbsd/tree/README.waf)
-- the +xz+ decompression tool needs to be insalled and because of a bug in the buildsystem its expected in +/usr/local/bin/xz+
+- the +waf+ build tools needs to be installed and in path (see
+  https://git.rtems.org/rtems-libbsd/tree/README.waf)
+- the +xz+ decompression tool needs to be installed and because of a bug in the
+  buildsystem its expected in +/usr/local/bin/xz+
+- the +zlib+ development files are necessary
 - to check for some of RTEMS source builders prerequisites
     
     cd rtems-source-builder
