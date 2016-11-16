@@ -92,6 +92,9 @@ extern "C" {
   {PIO_PD20B_SPI0_MISO | PIO_PD21B_SPI0_MOSI | PIO_PD22B_SPI0_SPCK |          \
       PIO_PD27B_SPI0_NPCS3, PIOD, ID_PIOD, PIO_PERIPH_B, PIO_DEFAULT},        \
                                                                               \
+  /* USB Power Disable */                                                     \
+  {PIO_PC16, PIOC, ID_PIOC, PIO_OUTPUT_1, PIO_DEFAULT},                       \
+                                                                              \
   /* Jumpers */                                                               \
   {PIO_PC14 | PIO_PC11 | PIO_PC10 | PIO_PC9 | PIO_PC8,                        \
       PIOC, ID_PIOC, PIO_INPUT, PIO_PULLUP},                                  \
