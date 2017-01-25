@@ -46,9 +46,6 @@
 
 #include <bsp.h>
 
-#include <grisp/pin-config.h>
-#include <grisp/led.h>
-
 #include <inih/ini.h>
 
 #define STACK_SIZE_INIT_TASK	(64 * 1024)
@@ -66,9 +63,9 @@
 #define RESET_VECTOR_OFFSET	0x00000004
 #define RESET_VECTOR_SIZE	4
 static char *app_begin = atsam_memory_sdram_begin;
-/* Bootloader occupies the SDRAM from (start + 50M) to the end */
+/* Bootloader occupies the SDRAM from (start + 1M) to the end */
 /* FIXME: Get from linker */
-static char *app_end = atsam_memory_sdram_end - (14*1024*1024);
+static char *app_end = atsam_memory_sdram_end - (1*1024*1024);
 
 const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
