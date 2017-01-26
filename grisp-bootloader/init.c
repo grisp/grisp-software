@@ -43,6 +43,7 @@
 #include <rtems/score/armv7m.h>
 #include <rtems/shell.h>
 #include <rtems/stringto.h>
+#include <rtems/dosfs.h>
 
 #include <bsp.h>
 #include <bsp/pin-config.h>
@@ -435,6 +436,13 @@ init_libbsd(void)
 	/* Let the callout timer allocate its resources */
 	sc = rtems_task_wake_after( 2 );
 	assert(sc == RTEMS_SUCCESSFUL);
+}
+
+rtems_dosfs_convert_control *rtems_dosfs_create_utf8_converter(
+  const char *codepage
+)
+{
+	return NULL;
 }
 
 static void
