@@ -45,6 +45,7 @@
 #include <rtems/stringto.h>
 
 #include <bsp.h>
+#include <bsp/pin-config.h>
 
 #include <inih/ini.h>
 
@@ -67,16 +68,32 @@ static char *app_begin = atsam_memory_sdram_begin;
 /* FIXME: Get from linker */
 static char *app_end = atsam_memory_sdram_end - (1*1024*1024);
 
-const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
-const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
-const uint32_t atsam_matrix_ccfg_sysio = GRISP_MATRIX_CCFG_SYSIO;
-
 static const char ini_file[] = "/media/mmcsd-0-0/grisp.ini";
 static int timeout_in_seconds = 3;
 static char image_path[PATH_MAX + 1] = "/media/mmcsd-0-0/grisp.bin";
 
 static rtems_id led_timer_id = RTEMS_INVALID_ID;
 static rtems_id wait_mounted_task_id = RTEMS_INVALID_ID;
+
+static const Pin led_pin = {PIO_PC8, PIOC, ID_PIOC, PIO_OUTPUT_0, PIO_DEFAULT};
+
+static void
+grisp_led_set1(bool one, bool two, bool three)
+{
+	bool on = one | two | three;
+
+	if (on) {
+		PIO_Set(&led_pin);
+	} else {
+		PIO_Clear(&led_pin);
+	}
+}
+
+static void
+grisp_led_set2(bool one, bool two, bool three)
+{
+	grisp_led_set1(one, two, three);
+}
 
 static int
 ini_value_copy(void *dst, size_t dst_size, const char *value)
@@ -152,6 +169,7 @@ led_timer(rtems_id timer, void *arg)
 static void
 init_led_early(void)
 {
+	PIO_Configure(&led_pin, 1);
 	grisp_led_set1(false, true, true);
 	grisp_led_set2(false, false, false);
 }
@@ -512,7 +530,5 @@ Init(rtems_task_argument arg)
 #include <rtems/netcmds-config.h>
 #define CONFIGURE_SHELL_COMMANDS_INIT
 #define CONFIGURE_SHELL_COMMANDS_ALL
-#define CONFIGURE_SHELL_USER_COMMANDS \
-  &rtems_shell_BSD_Command
 
 #include <rtems/shellconfig.h>

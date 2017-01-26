@@ -18,7 +18,7 @@ $(BUILDDIR):
 	mkdir $(BUILDDIR)
 
 $(APP).exe: $(APP_OBJS)
-	$(CCLINK) $^ -lgrisp -linih -lbsd -o $@
+	$(CCLINK) $^ -linih -lbsd -o $@
 
 clean:
 	rm -rf $(BUILDDIR)
