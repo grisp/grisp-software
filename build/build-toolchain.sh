@@ -28,6 +28,5 @@ cd "${PROJECTDIR}/rtems-source-builder/rtems"
 ../source-builder/sb-set-builder \
 	--log="${LOGDIR}/rsb-${RTEMS_CPU}-${NOW}.log" \
 	--prefix="${PREFIX}" \
-	--no-clean \
 	--without-rtems \
 	"${RTEMS_VERSION}/rtems-${RTEMS_CPU}"
