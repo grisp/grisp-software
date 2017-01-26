@@ -76,24 +76,20 @@ static char image_path[PATH_MAX + 1] = "/media/mmcsd-0-0/grisp.bin";
 static rtems_id led_timer_id = RTEMS_INVALID_ID;
 static rtems_id wait_mounted_task_id = RTEMS_INVALID_ID;
 
-static const Pin led_pin = {PIO_PC8, PIOC, ID_PIOC, PIO_OUTPUT_0, PIO_DEFAULT};
-
 static void
 grisp_led_set1(bool one, bool two, bool three)
 {
-	bool on = one | two | three;
-
-	if (on) {
-		PIO_Set(&led_pin);
-	} else {
-		PIO_Clear(&led_pin);
-	}
+	(void) one;
+	(void) two;
+	(void) three;
 }
 
 static void
 grisp_led_set2(bool one, bool two, bool three)
 {
-	grisp_led_set1(one, two, three);
+	(void) one;
+	(void) two;
+	(void) three;
 }
 
 static int
@@ -170,7 +166,6 @@ led_timer(rtems_id timer, void *arg)
 static void
 init_led_early(void)
 {
-	PIO_Configure(&led_pin, 1);
 	grisp_led_set1(false, true, true);
 	grisp_led_set2(false, false, false);
 }
