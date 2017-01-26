@@ -490,6 +490,7 @@ Init(rtems_task_argument arg)
  */
 #define RTEMS_BSD_CONFIG_BSP_CONFIG
 #define RTEMS_BSD_CONFIG_INIT
+#define RTEMS_BSD_CONFIG_DOMAIN_PAGE_MBUFS_SIZE (256 * 1024)
 
 #include <machine/rtems-bsd-config.h>
 
@@ -518,7 +519,7 @@ Init(rtems_task_argument arg)
 
 #define CONFIGURE_BDBUF_BUFFER_MAX_SIZE (16 * 1024)
 #define CONFIGURE_BDBUF_MAX_READ_AHEAD_BLOCKS 4
-#define CONFIGURE_BDBUF_CACHE_MEMORY_SIZE (1 * 1024 * 1024)
+#define CONFIGURE_BDBUF_CACHE_MEMORY_SIZE (256 * 1024)
 
 #define CONFIGURE_STACK_CHECKER_ENABLED
 
