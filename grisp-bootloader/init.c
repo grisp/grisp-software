@@ -270,9 +270,9 @@ static void
 print_status(bool ok)
 {
 	if (ok) {
-		printf("done\n");
+		printk("done\n");
 	} else {
-		printf("failed\n");
+		printk("failed\n");
 	}
 }
 
@@ -315,18 +315,27 @@ load_via_file(const char *file)
 {
 	int fd;
 	bool ok;
-	ssize_t in;
 	int rv;
-	size_t max_app_size = (size_t) (app_end - app_begin);
+	char *current = app_begin;
+	ssize_t in;
+	ssize_t total_read = 0;
 
-	printf("boot: open file \"%s\"... ", file);
+	printk("boot: open file \"%s\"... ", file);
 	fd = open(file, O_RDONLY);
 	ok = (fd >= 0);
 	print_status(ok);
 	if (ok) {
-		printf("boot: read file \"%s\"... ", file);
-		in = read(fd, app_begin, max_app_size);
-		printf("received %zi bytes\n", in);
+#define READ_CHUNK_SIZE 8 * 1024
+		printk("boot: read file \"%s\"... ", file);
+		do {
+			in = read(fd, current, READ_CHUNK_SIZE);
+			assert (in >= 0);
+			current += in;
+			total_read += in;
+			printk(".");
+		} while (in == READ_CHUNK_SIZE);
+
+		printk("\nreceived %d bytes\n", total_read);
 
 		rv = close(fd);
 		assert(rv == 0);
