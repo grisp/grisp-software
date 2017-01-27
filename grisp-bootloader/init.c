@@ -52,9 +52,9 @@
 
 #include <inih/ini.h>
 
-#define STACK_SIZE_INIT_TASK	(64 * 1024)
-#define STACK_SIZE_SHELL	(64 * 1024)
-#define STACK_SIZE_MEDIA_SERVER	(64 * 1024)
+#define STACK_SIZE_INIT_TASK	(32 * 1024)
+#define STACK_SIZE_SHELL	(32 * 1024)
+#define STACK_SIZE_MEDIA_SERVER	(32 * 1024)
 
 #define PRIO_INIT_TASK		(RTEMS_MAXIMUM_PRIORITY - 1)
 #define PRIO_MEDIA_SERVER	200
@@ -67,9 +67,9 @@
 #define RESET_VECTOR_OFFSET	0x00000004
 #define RESET_VECTOR_SIZE	4
 static char *app_begin = atsam_memory_sdram_begin;
-/* Bootloader occupies the SDRAM from (start + 1M) to the end */
+/* Bootloader occupies the SDRAM from end - 512k to the end */
 /* FIXME: Get from linker */
-static char *app_end = atsam_memory_sdram_end - (1*1024*1024);
+static char *app_end = atsam_memory_sdram_end - (512*1024);
 
 const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
@@ -508,9 +508,9 @@ Init(rtems_task_argument arg)
 #define CONFIGURE_INIT_TASK_INITIAL_MODES RTEMS_DEFAULT_MODES
 #define CONFIGURE_INIT_TASK_ATTRIBUTES RTEMS_FLOATING_POINT
 
-#define CONFIGURE_BDBUF_BUFFER_MAX_SIZE (16 * 1024)
+#define CONFIGURE_BDBUF_BUFFER_MAX_SIZE (8 * 1024)
 #define CONFIGURE_BDBUF_MAX_READ_AHEAD_BLOCKS 4
-#define CONFIGURE_BDBUF_CACHE_MEMORY_SIZE (256 * 1024)
+#define CONFIGURE_BDBUF_CACHE_MEMORY_SIZE (128 * 1024)
 
 #define CONFIGURE_STACK_CHECKER_ENABLED
 
