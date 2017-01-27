@@ -48,57 +48,35 @@ extern "C" {
 
 #define GRISP_PIN_CONFIG                                                      \
   /* Console */                                                               \
-  {PIO_PD25C_URXD2 | PIO_PD26C_UTXD2,                                         \
-      PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT},                              \
+  {PIO_PA21A_RXD1, PIOA, ID_PIOA, PIO_PERIPH_A, PIO_DEFAULT},                 \
+  {PIO_PB4D_TXD1, PIOB, ID_PIOB, PIO_PERIPH_D, PIO_DEFAULT},                  \
                                                                               \
   /* SDRAM */                                                                 \
-  {0x000000FF, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* D0 .. D7 */      \
-  {0x0000003F, PIOE, ID_PIOE, PIO_PERIPH_A, PIO_DEFAULT}, /* D8 .. D13 */     \
-  {0x00018000, PIOA, ID_PIOA, PIO_PERIPH_A, PIO_DEFAULT}, /* D14 .. D15 */    \
-  {0xBFF00000, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* A0 .. A9, A11 */ \
-  {0x00002000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* A10 */           \
-  {0x00040000, PIOA, ID_PIOA, PIO_PERIPH_C, PIO_DEFAULT}, /* A12 */           \
-  {0x00100001, PIOA, ID_PIOA, PIO_PERIPH_C, PIO_DEFAULT}, /* BA0, BA1 */      \
-  {0x00008000, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* CS */            \
-  {0x00040000, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* LDQM / NBS0 */   \
-  {0x00008000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* UDQM / NBS1 */   \
-  {0x00004000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* CKE */           \
-  {0x00010000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* RAS */           \
-  {0x00020000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* CAS */           \
-  {0x00800000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* CLK */           \
-  {0x20000000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* WE */            \
+  {0x000000FF, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* D0_7   */        \
+  {0x0000003F, PIOE, ID_PIOE, PIO_PERIPH_A, PIO_DEFAULT}, /* D8_13  */        \
+  {0x00018000, PIOA, ID_PIOA, PIO_PERIPH_A, PIO_DEFAULT}, /* D14_15 */        \
+  {0x3FF00000, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* A0_9   */        \
+  {0x00002000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* SDA10  */        \
+  {0x00020000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* CAS    */        \
+  {0x00010000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* RAS    */        \
+  {0x00004000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* SDCKE  */        \
+  {0x00800000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* SDCK   */        \
+  {0x00008000, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* SDSC   */        \
+  {0x00040000, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* NBS0   */        \
+  {0x00008000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* NBS1   */        \
+  {0x20000000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* SDWE   */        \
+  {0x00100000, PIOA, ID_PIOA, PIO_PERIPH_C, PIO_DEFAULT}  /* BA0    */        \
                                                                               \
   /* Trace port */                                                            \
   {0x000000F0, PIOC, ID_PIOC, PIO_PERIPH_C, PIO_DEFAULT}, /* TRACE0..3 */     \
   {0x00000100, PIOC, ID_PIOC, PIO_PERIPH_D, PIO_DEFAULT}, /* TRACECLK */      \
                                                                               \
   /* SD-Card */                                                               \
+  /* FIXME: Adapt */                                                          \
   {PIO_PA25D_MCCK, PIOA, ID_PIOA, PIO_PERIPH_D, PIO_DEFAULT},                 \
   {PIO_PA26C_MCDA2 | PIO_PA27C_MCDA3 | PIO_PA28C_MCCDA | PIO_PA30C_MCDA0 |    \
       PIO_PA31C_MCDA1, PIOA, ID_PIOA, PIO_PERIPH_C, PIO_DEFAULT},             \
-  {PIO_PD18, PIOD, ID_PIOD, PIO_INPUT, PIO_DEFAULT}, /* DETECT */             \
-                                                                              \
-  /* UART */                                                                  \
-  {PIO_PB0C_RXD0 | PIO_PB1C_TXD0 | PIO_PB2C_CTS0 | PIO_PB3C_RTS0,             \
-      PIOB, ID_PIOB, PIO_PERIPH_C, PIO_DEFAULT},                              \
-                                                                              \
-  /* I2C */                                                                   \
-  {PIO_PA3A_TWD0 | PIO_PA4A_TWCK0, PIOA, ID_PIOA, PIO_PERIPH_A, PIO_DEFAULT}, \
-                                                                              \
-  /* SPI */                                                                   \
-  {PIO_PA2, PIOA, ID_PIOA, PIO_INPUT, PIO_PULLUP},                            \
-  {PIO_PB12, PIOB, ID_PIOB, PIO_OUTPUT_1, PIO_DEFAULT},                       \
-  {PIO_PD12C_SPI0_NPCS2, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT},           \
-  {PIO_PD20B_SPI0_MISO | PIO_PD21B_SPI0_MOSI | PIO_PD22B_SPI0_SPCK |          \
-      PIO_PD27B_SPI0_NPCS3, PIOD, ID_PIOD, PIO_PERIPH_B, PIO_DEFAULT},        \
-                                                                              \
-  /* Jumpers */                                                               \
-  {PIO_PC14 | PIO_PC11 | PIO_PC10 | PIO_PC9 | PIO_PC8,                        \
-      PIOC, ID_PIOC, PIO_INPUT, PIO_PULLUP},                                  \
-                                                                              \
-  /* LEDs */                                                                  \
-  GRISP_LED_1R, GRISP_LED_1G, GRISP_LED_1B,                                   \
-  GRISP_LED_2R, GRISP_LED_2G, GRISP_LED_2B
+  {PIO_PD18, PIOD, ID_PIOD, PIO_INPUT, PIO_DEFAULT}, /* DETECT */
 
 #define GRISP_MATRIX_CCFG_SYSIO 0x20400000
 

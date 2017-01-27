@@ -34,54 +34,13 @@
 #include <grisp/led.h>
 #include <grisp/pin-config.h>
 
-static const Pin led_rgb1_red = GRISP_LED_1R;
-static const Pin led_rgb1_green = GRISP_LED_1G;
-static const Pin led_rgb1_blue = GRISP_LED_1B;
-
-static const Pin led_rgb2_red = GRISP_LED_2R;
-static const Pin led_rgb2_green = GRISP_LED_2G;
-static const Pin led_rgb2_blue = GRISP_LED_2B;
-
 rtems_status_code
 grisp_led_set(int led_nr, bool r, bool g, bool b)
 {
-	const Pin *led_r = NULL;
-	const Pin *led_g = NULL;
-	const Pin *led_b = NULL;
-
-	switch (led_nr) {
-	case 1:
-		led_r = &led_rgb1_red;
-		led_g = &led_rgb1_green;
-		led_b = &led_rgb1_blue;
-		break;
-	case 2:
-		led_r = &led_rgb2_red;
-		led_g = &led_rgb2_green;
-		led_b = &led_rgb2_blue;
-		break;
-	default:
-		return RTEMS_INVALID_NUMBER;
-		break;
-	}
-
-	if (r) {
-		PIO_Set(led_r);
-	} else {
-		PIO_Clear(led_r);
-	}
-
-	if (g) {
-		PIO_Set(led_g);
-	} else {
-		PIO_Clear(led_g);
-	}
-
-	if (b) {
-		PIO_Set(led_b);
-	} else {
-		PIO_Clear(led_b);
-	}
+	(void) led_nr;
+	(void) r;
+	(void) g;
+	(void) b;
 
 	return RTEMS_SUCCESSFUL;
 }
