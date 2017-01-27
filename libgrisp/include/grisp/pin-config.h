@@ -60,10 +60,6 @@ extern "C" {
   {0x20000000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* SDWE   */        \
   {0x00100000, PIOA, ID_PIOA, PIO_PERIPH_C, PIO_DEFAULT}, /* BA0    */        \
                                                                               \
-  /* Trace port */                                                            \
-  {0x000000F0, PIOC, ID_PIOC, PIO_PERIPH_C, PIO_DEFAULT}, /* TRACE0..3 */     \
-  {0x00000100, PIOC, ID_PIOC, PIO_PERIPH_D, PIO_DEFAULT}, /* TRACECLK */      \
-                                                                              \
   /* SD-Card */                                                               \
   {PIO_PA25D_MCCK, PIOA, ID_PIOA, PIO_PERIPH_D, PIO_DEFAULT},                 \
   {PIO_PA26C_MCDA2 | PIO_PA27C_MCDA3 | PIO_PA28C_MCCDA | PIO_PA30C_MCDA0 |    \
