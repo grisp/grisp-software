@@ -39,13 +39,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define GRISP_LED_1R	{PIO_PA24, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
-#define GRISP_LED_1G	{PIO_PA22, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
-#define GRISP_LED_1B	{PIO_PA23, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
-#define GRISP_LED_2R	{PIO_PA21, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
-#define GRISP_LED_2G	{PIO_PA19, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
-#define GRISP_LED_2B	{PIO_PA17, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
-
 #define GRISP_PIN_CONFIG                                                      \
   /* Console */                                                               \
   {PIO_PA21A_RXD1, PIOA, ID_PIOA, PIO_PERIPH_A, PIO_DEFAULT},                 \
@@ -65,20 +58,19 @@ extern "C" {
   {0x00040000, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* NBS0   */        \
   {0x00008000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* NBS1   */        \
   {0x20000000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* SDWE   */        \
-  {0x00100000, PIOA, ID_PIOA, PIO_PERIPH_C, PIO_DEFAULT}  /* BA0    */        \
+  {0x00100000, PIOA, ID_PIOA, PIO_PERIPH_C, PIO_DEFAULT}, /* BA0    */        \
                                                                               \
   /* Trace port */                                                            \
   {0x000000F0, PIOC, ID_PIOC, PIO_PERIPH_C, PIO_DEFAULT}, /* TRACE0..3 */     \
   {0x00000100, PIOC, ID_PIOC, PIO_PERIPH_D, PIO_DEFAULT}, /* TRACECLK */      \
                                                                               \
   /* SD-Card */                                                               \
-  /* FIXME: Adapt */                                                          \
   {PIO_PA25D_MCCK, PIOA, ID_PIOA, PIO_PERIPH_D, PIO_DEFAULT},                 \
   {PIO_PA26C_MCDA2 | PIO_PA27C_MCDA3 | PIO_PA28C_MCCDA | PIO_PA30C_MCDA0 |    \
       PIO_PA31C_MCDA1, PIOA, ID_PIOA, PIO_PERIPH_C, PIO_DEFAULT},             \
-  {PIO_PD18, PIOD, ID_PIOD, PIO_INPUT, PIO_DEFAULT}, /* DETECT */
+  {PIO_PD18, PIOD, ID_PIOD, PIO_INPUT, PIO_DEFAULT} /* DETECT */
 
-#define GRISP_MATRIX_CCFG_SYSIO 0x20400000
+#define GRISP_MATRIX_CCFG_SYSIO 0x20400010
 
 #ifdef __cplusplus
 }

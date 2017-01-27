@@ -46,7 +46,9 @@
 #include <rtems/dosfs.h>
 
 #include <bsp.h>
-#include <bsp/pin-config.h>
+
+#include <grisp/pin-config.h>
+#include <grisp/led.h>
 
 #include <inih/ini.h>
 
@@ -69,28 +71,16 @@ static char *app_begin = atsam_memory_sdram_begin;
 /* FIXME: Get from linker */
 static char *app_end = atsam_memory_sdram_end - (1*1024*1024);
 
+const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
+const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
+const uint32_t atsam_matrix_ccfg_sysio = GRISP_MATRIX_CCFG_SYSIO;
+
 static const char ini_file[] = "/media/mmcsd-0-0/grisp.ini";
 static int timeout_in_seconds = 3;
 static char image_path[PATH_MAX + 1] = "/media/mmcsd-0-0/grisp.bin";
 
 static rtems_id led_timer_id = RTEMS_INVALID_ID;
 static rtems_id wait_mounted_task_id = RTEMS_INVALID_ID;
-
-static void
-grisp_led_set1(bool one, bool two, bool three)
-{
-	(void) one;
-	(void) two;
-	(void) three;
-}
-
-static void
-grisp_led_set2(bool one, bool two, bool three)
-{
-	(void) one;
-	(void) two;
-	(void) three;
-}
 
 static int
 ini_value_copy(void *dst, size_t dst_size, const char *value)
@@ -437,6 +427,7 @@ rtems_dosfs_convert_control *rtems_dosfs_create_utf8_converter(
   const char *codepage
 )
 {
+	(void) codepage;
 	return NULL;
 }
 
