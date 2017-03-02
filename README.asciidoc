@@ -8,7 +8,7 @@ GRISP
 - the +xz+ decompression tool needs to be installed and because of a bug in the
   buildsystem its expected in +/usr/local/bin/xz+
 - the +zlib+ development files are necessary
-- to check for some of RTEMS source builders prerequisites
+- to check for some of RTEMS source builders prerequisites (but read Issue #7 before)
     
     cd rtems-source-builder
     ./source-builder/sb-check
