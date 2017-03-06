@@ -23,7 +23,11 @@ fi
 cp "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.sdram" "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds"
 
 # Build and install libbsd
-#waf clean
+if [ -e wscript ]
+then
+    waf clean
+fi
+
 waf configure \
 	--prefix="${PREFIX}" \
 	--rtems-bsps="${RTEMS_CPU}/${BSP_NAME}"
