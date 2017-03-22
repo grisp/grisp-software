@@ -40,6 +40,7 @@
 
 #include <bsp.h>
 
+#include <bsp/atsam-spi.h>
 #include <bsp/spi.h>
 #include <bsp/i2c.h>
 
@@ -79,7 +80,8 @@ init_spi(void)
 	uint32_t speed = 100000;
 
 	/* bus registration */
-	rv = atsam_register_spi_0();
+	rv = spi_bus_register_atsam(
+	    ATSAM_SPI_0_BUS_PATH, ID_SPI0, SPI0, NULL, 0);
 	assert(rv == 0);
 
 	fd = open(ATSAM_SPI_0_BUS_PATH, O_RDWR);
