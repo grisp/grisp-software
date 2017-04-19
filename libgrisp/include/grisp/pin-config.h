@@ -45,6 +45,8 @@ extern "C" {
 #define GRISP_LED_2R	{PIO_PA13, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
 #define GRISP_LED_2G	{PIO_PA5 , PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
 #define GRISP_LED_2B	{PIO_PA11, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
+#define GRISP_SAF_RESET	{PIO_PA12, PIOA, ID_PIOA, PIO_OUTPUT_1, PIO_DEFAULT}
+#define GRISP_SAF_IRQ	{PIO_PC16, PIOC, ID_PIOC, PIO_INPUT,    PIO_PULLUP }
 
 #define GRISP_PIN_CONFIG                                                      \
   /* Console */                                                               \
@@ -68,11 +70,11 @@ extern "C" {
   {0x00800000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* RAM_CLK */       \
   {0x20000000, PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT}, /* RAM_WE */        \
   {PIO_PA1,    PIOA, ID_PIOA, PIO_INPUT,    PIO_PULLUP }, /* SAF_HC_DACK */   \
-  {PIO_PA12,   PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}, /* SAF_RESET_N */   \
+  GRISP_SAF_RESET,                                        /* SAF_RESET_N */   \
   {PIO_PC8A_NWE, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* SAF_WR */      \
   {PIO_PC11A_NRD, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* SAF_RD */     \
   {PIO_PC14A_NCS0, PIOC, ID_PIOC, PIO_PERIPH_A, PIO_DEFAULT}, /* SAF_CS */    \
-  {PIO_PC16,   PIOC, ID_PIOC, PIO_INPUT,    PIO_PULLUP }, /* SAF_IRQ */       \
+  GRISP_SAF_IRQ,                                          /* SAF_IRQ */       \
   {PIO_PD10,   PIOD, ID_PIOD, PIO_INPUT,    PIO_PULLUP }, /* SAF_DREQ */      \
                                                                               \
   /* Trace port */                                                            \
