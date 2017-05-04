@@ -45,8 +45,9 @@ extern "C" {
 #define GRISP_LED_2R	{PIO_PA13, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
 #define GRISP_LED_2G	{PIO_PA5 , PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
 #define GRISP_LED_2B	{PIO_PA11, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
-#define GRISP_SAF_RESET	{PIO_PA12, PIOA, ID_PIOA, PIO_OUTPUT_1, PIO_DEFAULT}
-#define GRISP_SAF_IRQ	{PIO_PC16, PIOC, ID_PIOC, PIO_INPUT,    PIO_PULLUP }
+#define GRISP_SAF_RESET	{PIO_PA12, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
+#define GRISP_SAF_IRQ	{PIO_PC16, PIOC, ID_PIOC, PIO_INPUT,    PIO_PULLUP | PIO_IT_LOW_LEVEL}
+#define GRISP_WLAN_EN	{PIO_PA22, PIOA, ID_PIOA, PIO_OUTPUT_1, PIO_DEFAULT}
 
 #define GRISP_PIN_CONFIG                                                      \
   /* Console */                                                               \
@@ -102,7 +103,7 @@ extern "C" {
       PIO_PD27B_SPI0_NPCS3, PIOD, ID_PIOD, PIO_PERIPH_B, PIO_DEFAULT},        \
                                                                               \
   /* WLAN Enable */                                                           \
-  {PIO_PA22, PIOA, ID_PIOA, PIO_OUTPUT_1, PIO_DEFAULT},                       \
+  GRISP_WLAN_EN,                                                              \
                                                                               \
   /* Jumpers */                                                               \
   {PIO_PA6 , PIOA, ID_PIOA, PIO_INPUT, PIO_PULLUP},                           \

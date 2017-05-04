@@ -53,12 +53,16 @@
 #define PRIO_INIT_TASK		(RTEMS_MAXIMUM_PRIORITY - 1)
 #define PRIO_MEDIA_SERVER	200
 #define STACK_SIZE_MEDIA_SERVER	(64 * 1024)
+#define PRIO_IRQ_SERVER		50
+#define STACK_SIZE_IRQ_SERVER	(8 * 1024)
 
 #define EVT_MOUNTED		RTEMS_EVENT_9
 
 #define SAF_CS			0
 
 static void grisp_saf1761_basic_init(void);
+//static void grisp_saf1761_init_irq(void);
+static void grisp_enable_wlan(void);
 
 static rtems_id wait_mounted_task_id = RTEMS_INVALID_ID;
 
@@ -148,10 +152,22 @@ grisp_init_libbsd(void)
 {
 	rtems_status_code sc;
 
+//	sc = rtems_interrupt_server_initialize(
+//	    PRIO_IRQ_SERVER,
+//	    STACK_SIZE_IRQ_SERVER,
+//	    RTEMS_DEFAULT_MODES,
+//	    RTEMS_DEFAULT_ATTRIBUTES,
+//	    NULL
+//	);
+//	assert(sc == RTEMS_SUCCESSFUL);
+
 	grisp_saf1761_basic_init();
 
 	sc = rtems_bsd_initialize();
 	assert(sc == RTEMS_SUCCESSFUL);
+
+//	grisp_saf1761_init_irq();
+	grisp_enable_wlan();
 
 	/* Let the callout timer allocate its resources */
 	sc = rtems_task_wake_after( 2 );
@@ -177,7 +193,6 @@ reset_saf1761_pio_interrupt_status_handler(void *arg)
 static void
 grisp_saf1761_basic_init(void)
 {
-	rtems_status_code sc;
 	const Pin saf_reset = GRISP_SAF_RESET;
 	const Pin saf_irq = GRISP_SAF_IRQ;
 
@@ -193,53 +208,53 @@ grisp_saf1761_basic_init(void)
 	const uint32_t ns_per_tick = 1000 * 1000 * 1000 / BOARD_MCK + 1;
 
 	/* Write pattern (ck is one clock cycle):
-	 *      __ _________________________________ ___
-	 * A/D: __X_________________________________X___
-	 *      __                 _____________________
-	 * NWE:   \_______________/
-	 *      __                          ____________
-	 * NCS:   \________________________/
+	 *      __ __________________________________________ ___
+	 * A/D: __X__________________________________________X___
+	 *      ___________                 _____________________
+	 * NWE:            \_______________/
+	 *      ___________                          ____________
+	 * NCS:            \________________________/
 	 *
-	 * time:   <- min 17 ns -> <-1 ck-> <-1 ck->
+	 * time:   <-1 ck-> <- min 17 ns -> <-1 ck-> <-1 ck->
 	 *
 	 * NOTE: 17 ns is taken from SAF1761 data sheet.
 	 */
-	const uint32_t nwe_setup = 0;
-	const uint32_t ncs_wr_setup = 0;
+	const uint32_t nwe_setup = 1;
+	const uint32_t ncs_wr_setup = 1;
 	const uint32_t nwe_hold = 2;
 	const uint32_t nwe_pulse = 17 / ns_per_tick + 1;
 	const uint32_t ncs_wr_pulse = nwe_pulse + 1;
 	const uint32_t nwe_cycle = nwe_setup + nwe_pulse + nwe_hold;
 
 	/* Read pattern (ck is one clock cycle):
-	 *      __ ________________________________ _______
-	 * A:   __X________________________________X_______
-	 *      __                   ______________________
-	 * NRD:   \_________________/
-	 *      __                   ______________________
-	 * NCS:   \_________________/
-	 *                     ____________
-	 * D:   --------------(____________)---------------
+	 *      __ _________________________________________ _______
+	 * A:   __X_________________________________________X_______
+	 *      ___________                   ______________________
+	 * NRD:            \_________________/
+	 *      ___________                   ______________________
+	 * NCS:            \_________________/
+	 *                              ____________
+	 * D:   -----------------------(____________)---------------
 	 *
-	 * time:   <-- min 22 ns --> <--- x ck --->
-	 *         <------------- 36 ns ---------->
+	 * time:   <-1 ck-> <-- min 22 ns --> <--- x ck --->
+	 *         <---------------------- 36 ns ---------->
 	 *
 	 * NOTE: 22 and 36 ns is taken from SAF1761 data sheet. The x ck depends
 	 * on the 36 ns. But it has to be at least one.
 	 */
-	const uint32_t nrd_setup = 0;
-	const uint32_t ncs_rd_setup = 0;
+	const uint32_t nrd_setup = 1;
+	const uint32_t ncs_rd_setup = 1;
 	const uint32_t nrd_pulse = 22 / ns_per_tick + 1;
 	const uint32_t ncs_rd_pulse = nrd_pulse;
 	const uint32_t nrd_cycle_min = 36 / ns_per_tick + 1;
-	const uint32_t nrd_cycle = nrd_cycle_min > nrd_pulse ?
-	    nrd_cycle_min : nrd_pulse + 1;
+	const uint32_t nrd_cycle = nrd_cycle_min > (nrd_pulse + nrd_setup) ?
+	    nrd_cycle_min : nrd_pulse + nrd_setup + 1;
 
 	/* Enable SMC */
 	PMC_EnablePeripheral(ID_SMC);
 
 	/* disable SMC write protection */
-	SMC->SMC_WPMR = 0x534D4301;
+	SMC->SMC_WPMR = 0x534D4300;
 
 	SMC->SMC_CS_NUMBER[SAF_CS].SMC_SETUP =
 	    SMC_SETUP_NCS_RD_SETUP(ncs_rd_setup) |
@@ -260,26 +275,37 @@ grisp_saf1761_basic_init(void)
 	    SMC_MODE_DBW_16_BIT | SMC_MODE_TDF_CYCLES(1);
 
 	/* enable SMC write protection */
-	SMC->SMC_WPMR = 0x534D4300;
+	SMC->SMC_WPMR = 0x534D4301;
+
+	PIO_DisableIt(&saf_irq);
 
 	/* Release SAF out of it's reset. */
-	PIO_Clear(&saf_reset);
+	PIO_Set(&saf_reset);
+}
 
-	/* Activate pin interrupt. Add a default handler that just clears the
-	 * status. */
-	sc = rtems_interrupt_server_handler_install(
-		RTEMS_ID_NONE,
-		PIOC_IRQn,
-		"SAF1761_PIO",
-		RTEMS_INTERRUPT_SHARED,
-		reset_saf1761_pio_interrupt_status_handler,
-		saf_irq.pio
-	);
-	assert(sc);
+//static void
+//grisp_saf1761_init_irq(void)
+//{
+//	rtems_status_code sc;
+//	const Pin saf_irq = GRISP_SAF_IRQ;
+//	/* Activate pin interrupt. Add a default handler that just clears the
+//	 * status. */
+//	PIO_EnableIt(&saf_irq);
+//	sc = rtems_interrupt_server_handler_install(
+//		RTEMS_ID_NONE,
+//		PIOC_IRQn,
+//		"SAF1761_PIO",
+//		RTEMS_INTERRUPT_SHARED,
+//		reset_saf1761_pio_interrupt_status_handler,
+//		saf_irq.pio
+//	);
+//	assert(sc == RTEMS_SUCCESSFUL);
+//}
 
-	saf_irq.pio->PIO_AIMER |= saf_irq.mask;
-	saf_irq.pio->PIO_ESR |= saf_irq.mask;
-	saf_irq.pio->PIO_REHLSR |= saf_irq.mask;
-	(void) saf_irq.pio->PIO_ISR;
-	saf_irq.pio->PIO_IER |= saf_irq.mask;
+static void
+grisp_enable_wlan(void)
+{
+	const Pin wlan_en = GRISP_WLAN_EN;
+	/* Enable WLAN supply */
+	PIO_Clear(&wlan_en);
 }
