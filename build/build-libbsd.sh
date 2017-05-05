@@ -23,7 +23,7 @@ fi
 cp "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.sdram" "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds"
 
 # Build and install libbsd
-if [ -e wscript ]
+if [ -e build ]
 then
     waf clean
 fi
