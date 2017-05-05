@@ -205,7 +205,7 @@ grisp_saf1761_basic_init(void)
 #if BOARD_MCK > 150000000
 	#error check if MCK > 150 MHz is supported by this code.
 #endif
-	const uint32_t ns_per_tick = 1000 * 1000 * 1000 / BOARD_MCK + 1;
+	const uint32_t ns_per_tick = 1000 * 1000 * 1000 / BOARD_MCK;
 
 	/* Write pattern (ck is one clock cycle):
 	 *      __ __________________________________________ ___
