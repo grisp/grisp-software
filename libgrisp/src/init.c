@@ -231,8 +231,8 @@ grisp_saf1761_basic_init(void)
 	 * A:   __X_________________________________________X_______
 	 *      ___________                   ______________________
 	 * NRD:            \_________________/
-	 *      ___________                   ______________________
-	 * NCS:            \_________________/
+	 *      __                            ______________________
+	 * NCS:   \__________________________/
 	 *                              ____________
 	 * D:   -----------------------(____________)---------------
 	 *
@@ -243,9 +243,9 @@ grisp_saf1761_basic_init(void)
 	 * on the 36 ns. But it has to be at least one.
 	 */
 	const uint32_t nrd_setup = 1;
-	const uint32_t ncs_rd_setup = 1;
+	const uint32_t ncs_rd_setup = 0;
 	const uint32_t nrd_pulse = 22 / ns_per_tick + 1;
-	const uint32_t ncs_rd_pulse = nrd_pulse;
+	const uint32_t ncs_rd_pulse = nrd_pulse + nrd_setup;
 	const uint32_t nrd_cycle_min = 36 / ns_per_tick + 1;
 	const uint32_t nrd_cycle = nrd_cycle_min > (nrd_pulse + nrd_setup) ?
 	    nrd_cycle_min : nrd_pulse + nrd_setup + 1;
