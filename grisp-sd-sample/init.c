@@ -53,7 +53,7 @@
 #define STACK_SIZE_INIT_TASK	(64 * 1024)
 #define STACK_SIZE_SHELL	(64 * 1024)
 
-#define PRIO_SHELL		10
+#define PRIO_SHELL		150
 
 const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
@@ -136,6 +136,8 @@ Init(rtems_task_argument arg)
 #define CONFIGURE_BDBUF_BUFFER_MAX_SIZE (16 * 1024)
 #define CONFIGURE_BDBUF_MAX_READ_AHEAD_BLOCKS 4
 #define CONFIGURE_BDBUF_CACHE_MEMORY_SIZE (1 * 1024 * 1024)
+#define CONFIGURE_BDBUF_READ_AHEAD_TASK_PRIORITY 97
+#define CONFIGURE_SWAPOUT_TASK_PRIORITY 97
 
 #define CONFIGURE_STACK_CHECKER_ENABLED
 
