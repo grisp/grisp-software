@@ -150,7 +150,23 @@ Init(rtems_task_argument arg)
  * Configure Shell.
  */
 #include <rtems/netcmds-config.h>
+#include <bsp/irq-info.h>
 #define CONFIGURE_SHELL_COMMANDS_INIT
+
+#define CONFIGURE_SHELL_USER_COMMANDS \
+  &bsp_interrupt_shell_command, \
+  &rtems_shell_ARP_Command, \
+  &rtems_shell_PFCTL_Command, \
+  &rtems_shell_PING_Command, \
+  &rtems_shell_IFCONFIG_Command, \
+  &rtems_shell_ROUTE_Command, \
+  &rtems_shell_NETSTAT_Command, \
+  &rtems_shell_DHCPCD_Command, \
+  &rtems_shell_HOSTNAME_Command, \
+  &rtems_shell_SYSCTL_Command, \
+  &rtems_shell_VMSTAT_Command, \
+  &rtems_shell_WLANSTATS_Command
+
 #define CONFIGURE_SHELL_COMMANDS_ALL
 
 #include <rtems/shellconfig.h>
