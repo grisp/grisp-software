@@ -63,6 +63,32 @@
 #define PMOD_CMPS_SIZE 13
 #define PMOD_CMPS_PAGE_SIZE 1
 
+#define DIO11 {PIO_PC12, PIOC, ID_PIOC, PIO_OUTPUT_0, PIO_DEFAULT}
+#define DIO21 {PIO_PC13, PIOC, ID_PIOC, PIO_OUTPUT_0, PIO_DEFAULT}
+#define DIO31 {PIO_PA21, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
+#define DIO41 {PIO_PD30, PIOD, ID_PIOD, PIO_OUTPUT_0, PIO_DEFAULT}
+#define DIO51 {PIO_PD0, PIOD, ID_PIOD, PIO_INPUT, PIO_DEFAULT}
+#define DIO61 {PIO_PD1, PIOD, ID_PIOD, PIO_INPUT, PIO_DEFAULT}
+#define DIO71 {PIO_PD2, PIOD, ID_PIOD, PIO_INPUT, PIO_DEFAULT}
+#define DIO81 {PIO_PD3, PIOD, ID_PIOD, PIO_INPUT, PIO_DEFAULT}
+
+#define DIO12 {PIO_PC12, PIOC, ID_PIOC, PIO_INPUT, PIO_DEFAULT}
+#define DIO22 {PIO_PC13, PIOC, ID_PIOC, PIO_INPUT, PIO_DEFAULT}
+#define DIO32 {PIO_PA21, PIOA, ID_PIOA, PIO_INPUT, PIO_DEFAULT}
+#define DIO42 {PIO_PD30, PIOD, ID_PIOD, PIO_INPUT, PIO_DEFAULT}
+#define DIO52 {PIO_PD0, PIOD, ID_PIOD, PIO_OUTPUT_0, PIO_DEFAULT}
+#define DIO62 {PIO_PD1, PIOD, ID_PIOD, PIO_OUTPUT_0, PIO_DEFAULT}
+#define DIO72 {PIO_PD2, PIOD, ID_PIOD, PIO_OUTPUT_0, PIO_DEFAULT}
+#define DIO82 {PIO_PD3, PIOD, ID_PIOD, PIO_OUTPUT_0, PIO_DEFAULT}
+
+static const Pin DPIO1[] = {DIO11, DIO21, DIO31, DIO41, DIO51, DIO61, DIO71, DIO81};
+static const Pin DPIO2[] = {DIO12, DIO22, DIO32, DIO42, DIO52, DIO62, DIO72, DIO82};
+
+uint32_t ans;
+
+
+
+
 const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
 const uint32_t atsam_matrix_ccfg_sysio = GRISP_MATRIX_CCFG_SYSIO;
@@ -230,6 +256,16 @@ read_write_pmod_cmps(int fd_in, uint8_t *out, size_t lenr)
 }
 
 static void
+init_gpio1(void) {
+	PIO_Configure(DPIO1, sizeof(DPIO1)/sizeof(DPIO1[0]));
+}
+
+static void
+init_gpio2(void) {
+	PIO_Configure(DPIO2, sizeof(DPIO2)/sizeof(DPIO2[0]));
+}
+
+static void
 Init(rtems_task_argument arg)
 {
 	int rv;
@@ -330,8 +366,140 @@ Init(rtems_task_argument arg)
 	}
 	puts("");
 
+	init_gpio1();
+
 	if (passed) {
-		puts("**** Test successfull ****");
+		puts("\nGPIO test");
+		puts("Switch GPIO1 high and measure GPIO2");
+		PIO_Set(&DPIO1[0]);
+		PIO_Clear(&DPIO1[1]);
+		PIO_Set(&DPIO1[2]);
+		PIO_Clear(&DPIO1[3]);
+		ans = PIO_Get(&DPIO1[4]);
+		if (ans == 0) {
+			puts ("GPIO fail between DIO1 and DIO5");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO1[5]);
+		if (ans) {
+			puts ("GPIO fail between DIO2 and DIO6");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO1[6]);
+		if (ans == 0) {
+			puts ("GPIO fail between DIO3 and DIO7");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO1[7]);
+		if (ans) {
+			puts ("GPIO fail between DIO4 and DIO8");
+			passed = false;
+		}
+		if (passed) {
+			puts ("Pattern 1010 read");
+		}
+	}
+	if (passed) {
+		PIO_Clear(&DPIO1[0]);
+		PIO_Set(&DPIO1[1]);
+		PIO_Clear(&DPIO1[2]);
+		PIO_Set(&DPIO1[3]);
+		ans = PIO_Get(&DPIO1[4]);
+		if (ans) {
+			puts ("GPIO fail between DIO1 and DIO5");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO1[5]);
+		if (ans == 0) {
+			puts ("GPIO fail between DIO2 and DIO6");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO1[6]);
+		if (ans) {
+			puts ("GPIO fail between DIO3 and DIO7");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO1[7]);
+		if (ans == 0) {
+			puts ("GPIO fail between DIO4 and DIO8");
+			passed = false;
+		}
+		if (passed) {
+			puts ("Pattern 0101 read");
+		}
+	}
+
+	init_gpio2();
+
+	if (passed) {
+		puts("\nGPIO test");
+		puts("Switch GPIO2 high and measure GPIO1");
+		PIO_Set(&DPIO2[4]);
+		PIO_Clear(&DPIO2[5]);
+		PIO_Set(&DPIO2[6]);
+		PIO_Clear(&DPIO2[7]);
+		ans = PIO_Get(&DPIO2[0]);
+		if (ans == 0) {
+			puts ("GPIO fail between DIO1 and DIO5");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO2[1]);
+		if (ans) {
+			puts ("GPIO fail between DIO2 and DIO6");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO2[2]);
+		if (ans == 0) {
+			puts ("GPIO fail between DIO3 and DIO7");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO2[3]);
+		if (ans) {
+			puts ("GPIO fail between DIO4 and DIO8");
+			passed = false;
+		}
+		if (passed) {
+			puts ("Pattern 1010 read");
+		}
+	}
+	if (passed) {
+		PIO_Clear(&DPIO2[4]);
+		PIO_Set(&DPIO2[5]);
+		PIO_Clear(&DPIO2[6]);
+		PIO_Set(&DPIO2[7]);
+		ans = PIO_Get(&DPIO2[0]);
+		if (ans) {
+			puts ("GPIO fail between DIO1 and DIO5");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO2[1]);
+		if (ans == 0) {
+			puts ("GPIO fail between DIO2 and DIO6");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO2[2]);
+		if (ans) {
+			puts ("GPIO fail between DIO3 and DIO7");
+			passed = false;
+		}
+		ans = PIO_Get(&DPIO2[3]);
+		if (ans == 0) {
+			puts ("GPIO fail between DIO4 and DIO8");
+			passed = false;
+		}
+		if (passed) {
+			puts ("Pattern 0101 read");
+		}
+	}
+
+	if (passed) {
+		puts("\nLED test");
+		grisp_led_set1(true, true, true);
+		grisp_led_set2(true, true, true);
+	}
+
+	if (passed) {
+		puts("**** Test successful if all leds on****");
 	}
 	else {
 		puts("**** Test FAILED ****");
@@ -342,6 +510,7 @@ Init(rtems_task_argument arg)
 	rv = close_fds(fd_in, fd_out, fd_in_cmps, fd_out_cmps);
 	assert(rv == 0);
 	rtems_task_delete(RTEMS_SELF);
+
 }
 
 /*
