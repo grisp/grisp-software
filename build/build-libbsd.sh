@@ -22,17 +22,42 @@ then
 fi
 cp "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.sdram" "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds"
 
+# Evaluate options
+DO_CLEAN=0
+DO_INSTALL=0
+for i in "$@" ; do
+	case "$i" in
+	clean)
+		DO_CLEAN=1
+		;;
+	install)
+		DO_INSTALL=1
+		;;
+	*)
+		echo "Unexpected option: '$i'"
+		exit 1
+		;;
+	esac
+done
+
 # Build and install libbsd
-if [ -e build ]
+if [ $DO_CLEAN -ne 0 ]
 then
-    waf clean
+	if [ -e build ]
+	then
+		waf clean
+	fi
 fi
 
 waf configure \
 	--prefix="${PREFIX}" \
 	--rtems-bsps="${RTEMS_CPU}/${BSP_NAME}"
 waf
-waf install
+
+if [ $DO_INSTALL -ne 0 ]
+then
+	waf install
+fi
 
 # part 2 of ugly workaround to build the tests with external RAM
 mv "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.org" "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds"

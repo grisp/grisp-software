@@ -28,6 +28,6 @@ cd "${RTEMS_SOURCE_DIR}"
 ./bootstrap
 cd "${PROJECTDIR}"
 "${SCRIPTDIR}/build-bsp.sh" clean install
-"${SCRIPTDIR}/build-libbsd.sh"
+"${SCRIPTDIR}/build-libbsd.sh" clean install
 "${SCRIPTDIR}/build-libinih.sh"
 "${SCRIPTDIR}/build-libgrisp.sh"
