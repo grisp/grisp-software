@@ -42,6 +42,7 @@ void	grisp_init_libbsd(void);
 void	grisp_init_sd_card(void);
 void	grisp_init_lower_self_prio(void);
 rtems_status_code grisp_init_wait_for_sd(void);
+void	grisp_saf1761_basic_init(void);
 
 #ifdef __cplusplus
 }

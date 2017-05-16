@@ -48,6 +48,7 @@
 #include <bsp.h>
 #include <bsp/irq.h>
 
+#include <grisp/init.h>
 #include <grisp/pin-config.h>
 
 #define PRIO_INIT_TASK		(RTEMS_MAXIMUM_PRIORITY - 1)
@@ -60,7 +61,6 @@
 
 #define SAF_CS			0
 
-static void grisp_saf1761_basic_init(void);
 static void grisp_enable_wlan(void);
 
 static rtems_id wait_mounted_task_id = RTEMS_INVALID_ID;
@@ -169,7 +169,7 @@ ns_to_mck_ticks(uint32_t ns)
 	return (ns * (BOARD_MCK / 1000)) / 1000;
 }
 
-static void
+void
 grisp_saf1761_basic_init(void)
 {
 	const Pin saf_reset = GRISP_SAF_RESET;
