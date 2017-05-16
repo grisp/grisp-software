@@ -15,12 +15,17 @@ export PATH="${PREFIX}/bin:${PATH}"
 
 cd "${LIBBSD_SOURCE_DIR}"
 
-# ugly workaround to build the tests with external RAM
-if [ ! -e "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.org" ]
+if [ "$BSP_NAME" == "atsamv" ]
 then
-	mv "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds" "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.org"
+	# ugly workaround to build the tests with external RAM
+	if [ ! -e "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.org" ]
+	then
+		mv "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds" \
+		    "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.org"
+	fi
+	cp "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.sdram" \
+	    "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds"
 fi
-cp "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.sdram" "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds"
 
 # Evaluate options
 DO_CLEAN=0
@@ -59,5 +64,9 @@ then
 	waf install
 fi
 
-# part 2 of ugly workaround to build the tests with external RAM
-mv "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.org" "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds"
+if [ "$BSP_NAME" == "atsamv" ]
+then
+	# part 2 of ugly workaround to build the tests with external RAM
+	mv "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds.org" \
+	    "${PREFIX}/${TARGET}/${BSP_NAME}/lib/linkcmds"
+fi
