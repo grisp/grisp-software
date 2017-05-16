@@ -1,5 +1,6 @@
 GRISP
 =====
+:toc:
 
 == Prerequisites
 
