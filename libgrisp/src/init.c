@@ -61,7 +61,6 @@
 #define SAF_CS			0
 
 static void grisp_saf1761_basic_init(void);
-//static void grisp_saf1761_init_irq(void);
 static void grisp_enable_wlan(void);
 
 static rtems_id wait_mounted_task_id = RTEMS_INVALID_ID;
@@ -152,21 +151,11 @@ grisp_init_libbsd(void)
 {
 	rtems_status_code sc;
 
-//	sc = rtems_interrupt_server_initialize(
-//	    PRIO_IRQ_SERVER,
-//	    STACK_SIZE_IRQ_SERVER,
-//	    RTEMS_DEFAULT_MODES,
-//	    RTEMS_DEFAULT_ATTRIBUTES,
-//	    NULL
-//	);
-//	assert(sc == RTEMS_SUCCESSFUL);
-
 	grisp_saf1761_basic_init();
 
 	sc = rtems_bsd_initialize();
 	assert(sc == RTEMS_SUCCESSFUL);
 
-//	grisp_saf1761_init_irq();
 	grisp_enable_wlan();
 
 	/* Let the callout timer allocate its resources */
@@ -178,16 +167,6 @@ static inline uint32_t
 ns_to_mck_ticks(uint32_t ns)
 {
 	return (ns * (BOARD_MCK / 1000)) / 1000;
-}
-
-static void
-reset_saf1761_pio_interrupt_status_handler(void *arg)
-{
-	Pio *pio = arg;
-
-	/* The PIOC is used only by the SAF1761. So we can just reset the status
-	 * without any further handling. */
-	(void) pio->PIO_ISR;
 }
 
 static void
@@ -282,25 +261,6 @@ grisp_saf1761_basic_init(void)
 	/* Release SAF out of it's reset. */
 	PIO_Set(&saf_reset);
 }
-
-//static void
-//grisp_saf1761_init_irq(void)
-//{
-//	rtems_status_code sc;
-//	const Pin saf_irq = GRISP_SAF_IRQ;
-//	/* Activate pin interrupt. Add a default handler that just clears the
-//	 * status. */
-//	PIO_EnableIt(&saf_irq);
-//	sc = rtems_interrupt_server_handler_install(
-//		RTEMS_ID_NONE,
-//		PIOC_IRQn,
-//		"SAF1761_PIO",
-//		RTEMS_INTERRUPT_SHARED,
-//		reset_saf1761_pio_interrupt_status_handler,
-//		saf_irq.pio
-//	);
-//	assert(sc == RTEMS_SUCCESSFUL);
-//}
 
 static void
 grisp_enable_wlan(void)
