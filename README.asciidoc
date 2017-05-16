@@ -23,7 +23,25 @@ GRISP
 
 == Quick Start Guide
 
-You can build the tools by just using +./build/build.sh+. This will do the
+You can build the whole toolchain by running +./build/build.sh+. See
+<<Building>> for more details.
+
+To build the simple RTEMS sample application, go to +grisp-simple-sample+ and
+call +make+.
+
+== Directory Structure
+
+The following directory structure is used in this project:
+
+- build: scripts for building the tool chain and libraries
+- grisp-XYZ: applications
+- libXYZ: non-RTEMS libraries
+- rtems-XYZ: software and libraries related to RTEMS
+- README.asciidoc: this document
+
+== Building
+
+The complete toolchain is built by running +./build/build.sh+. This will do the
 following:
 
 - check out the necessary git submodules
@@ -36,18 +54,22 @@ All installations are made inside the +rtems-install+ subdirectory in the base
 directory of the repository. To change the install location edit the +PREFIX+ in
 +build/configuration.sh+.
 
-After this, you can build the simple RTEMS sample application. Go to
-+grisp-simple-sample+ and call +make+.
+=== Cleaning
 
-== Directory Structure
+Normally, running `./build/build.sh` (or any other of the individual build
+scripts in the `./build` folder) should rebuild without the need for cleaning.
 
-The following directory structure is used in this project:
+However, if you want a clean start you can delete the `rtems-install` folder
+which will delete all created binaries, libraries and header files.
 
-- build: scripts for building the tool chain and libraries
-- grisp-XYZ: applications
-- libXYZ: non-RTEMS libraries
-- rtems-XYZ: software and libraries related to RTEMS
-- README.asciidoc: this document
+To make a complete reset of the whole repository, use the following commands:
+
+[source,shell]
+----
+git co .        # Reverts all uncommited changes
+git clean -dxn  # gives a preview, what unversioned files would be deleted
+git clean -dxf  # deletes everything that is not under version control
+----
 
 == Boot Loader
 
