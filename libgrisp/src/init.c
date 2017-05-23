@@ -187,36 +187,36 @@ grisp_saf1761_basic_init(void)
 	const uint32_t ns_per_tick = 1000 * 1000 * 1000 / BOARD_MCK;
 
 	/* Write pattern (ck is one clock cycle):
-	 *      __ __________________________________________ ___
-	 * A/D: __X__________________________________________X___
-	 *      ___________                 _____________________
-	 * NWE:            \_______________/
-	 *      ___________                          ____________
-	 * NCS:            \________________________/
+	 *      __ ___________________________________________________ ___
+	 * A/D: __X___________________________________________________X___
+	 *      ____________________                 _____________________
+	 * NWE:                     \_______________/
+	 *      ____________                                  ____________
+	 * NCS:             \________________________________/
 	 *
-	 * time:   <-1 ck-> <- min 17 ns -> <-1 ck-> <-1 ck->
+	 * time:   <-1 ck-> <-1 ck-> <- min 17 ns -> <-1 ck-> <-1 ck->
 	 *
 	 * NOTE: 17 ns is taken from SAF1761 data sheet.
 	 */
-	const uint32_t nwe_setup = 1;
+	const uint32_t nwe_setup = 2;
 	const uint32_t ncs_wr_setup = 1;
 	const uint32_t nwe_hold = 2;
 	const uint32_t nwe_pulse = 17 / ns_per_tick + 1;
-	const uint32_t ncs_wr_pulse = nwe_pulse + 1;
+	const uint32_t ncs_wr_pulse = nwe_pulse + 2;
 	const uint32_t nwe_cycle = nwe_setup + nwe_pulse + nwe_hold;
 
 	/* Read pattern (ck is one clock cycle):
-	 *      __ _________________________________________ _______
-	 * A:   __X_________________________________________X_______
-	 *      ___________                   ______________________
+	 *      __ _________________________________________________ _______
+	 * A:   __X_________________________________________________X_______
+	 *      ___________                   ______________________________
 	 * NRD:            \_________________/
-	 *      __                            ______________________
-	 * NCS:   \__________________________/
-	 *                              ____________
-	 * D:   -----------------------(____________)---------------
+	 *      __                                     _____________________
+	 * NCS:   \___________________________________/
+	 *                              _________
+	 * D:   -----------------------(_________)--------------------------
 	 *
-	 * time:   <-1 ck-> <-- min 22 ns --> <--- x ck --->
-	 *         <---------------------- 36 ns ---------->
+	 * time:   <-1 ck-> <-- min 22 ns --> <-1 ck-> <--- x ck --->
+	 *         <------------------ min 36 ns ------------------->
 	 *
 	 * NOTE: 22 and 36 ns is taken from SAF1761 data sheet. The x ck depends
 	 * on the 36 ns. But it has to be at least one.
@@ -224,10 +224,12 @@ grisp_saf1761_basic_init(void)
 	const uint32_t nrd_setup = 1;
 	const uint32_t ncs_rd_setup = 0;
 	const uint32_t nrd_pulse = 22 / ns_per_tick + 1;
-	const uint32_t ncs_rd_pulse = nrd_pulse + nrd_setup;
-	const uint32_t nrd_cycle_min = 36 / ns_per_tick + 1;
-	const uint32_t nrd_cycle = nrd_cycle_min > (nrd_pulse + nrd_setup) ?
-	    nrd_cycle_min : nrd_pulse + nrd_setup + 1;
+	const uint32_t nrd_hold = 1;
+	const uint32_t ncs_rd_pulse = nrd_pulse + nrd_setup + nrd_hold;
+	const uint32_t nrd_cycle_min = 36 / ns_per_tick + 8;
+	const uint32_t nrd_cycle =
+	    nrd_cycle_min > (nrd_pulse + nrd_setup + nrd_hold) ?
+	    nrd_cycle_min : nrd_pulse + nrd_setup + nrd_hold + 1;
 
 	/* Enable SMC */
 	PMC_EnablePeripheral(ID_SMC);
