@@ -221,8 +221,11 @@ grisp_saf1761_basic_init(void)
 	 * NOTE: 22 and 36 ns is taken from SAF1761 data sheet. The x ck depends
 	 * on the 36 ns. But it has to be at least one.
 	 */
-	const uint32_t nrd_setup = 1;
-	const uint32_t ncs_rd_setup = 0;
+	/* FIXME: nrd_setup, ncs_rd_setup and nrd_cycle_min have been increased
+	 * by 8 ticks. Without this, the controller doesn't generate interrupts
+	 * cleanly. */
+	const uint32_t nrd_setup = 1 + 8;
+	const uint32_t ncs_rd_setup = 0 + 8;
 	const uint32_t nrd_pulse = 22 / ns_per_tick + 1;
 	const uint32_t nrd_hold = 1;
 	const uint32_t ncs_rd_pulse = nrd_pulse + nrd_setup + nrd_hold;
