@@ -43,6 +43,8 @@ void	grisp_init_sd_card(void);
 void	grisp_init_lower_self_prio(void);
 rtems_status_code grisp_init_wait_for_sd(void);
 void	grisp_saf1761_basic_init(void);
+void	grisp_wlan_power_up(void);
+void	grisp_wlan_power_down(void);
 
 #ifdef __cplusplus
 }

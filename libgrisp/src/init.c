@@ -61,8 +61,6 @@
 
 #define SAF_CS			0
 
-static void grisp_enable_wlan(void);
-
 static rtems_id wait_mounted_task_id = RTEMS_INVALID_ID;
 
 static rtems_status_code
@@ -156,7 +154,7 @@ grisp_init_libbsd(void)
 	sc = rtems_bsd_initialize();
 	assert(sc == RTEMS_SUCCESSFUL);
 
-	grisp_enable_wlan();
+	grisp_wlan_power_up();
 
 	/* Let the callout timer allocate its resources */
 	sc = rtems_task_wake_after( 2 );
@@ -267,10 +265,16 @@ grisp_saf1761_basic_init(void)
 	PIO_Set(&saf_reset);
 }
 
-static void
-grisp_enable_wlan(void)
+void
+grisp_wlan_power_up(void)
 {
 	const Pin wlan_en = GRISP_WLAN_EN;
-	/* Enable WLAN supply */
 	PIO_Clear(&wlan_en);
+}
+
+void
+grisp_wlan_power_down(void)
+{
+	const Pin wlan_en = GRISP_WLAN_EN;
+	PIO_Set(&wlan_en);
 }
