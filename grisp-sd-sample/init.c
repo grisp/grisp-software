@@ -43,6 +43,7 @@
 #include <rtems/score/armv7m.h>
 #include <rtems/shell.h>
 #include <rtems/stringto.h>
+#include <machine/rtems-bsd-commands.h>
 
 #include <bsp.h>
 
@@ -60,6 +61,41 @@ const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
 const uint32_t atsam_matrix_ccfg_sysio = GRISP_MATRIX_CCFG_SYSIO;
 
 static void
+network_dhcpcd_task(rtems_task_argument arg)
+{
+	int exit_code;
+	char *dhcpcd[] = {
+		"dhcpcd",
+		NULL
+	};
+
+	(void)arg;
+
+	exit_code = rtems_bsd_command_dhcpcd(RTEMS_BSD_ARGC(dhcpcd), dhcpcd);
+	assert(exit_code == EXIT_SUCCESS);
+}
+
+static void
+start_network_dhcpcd(void)
+{
+	rtems_status_code sc;
+	rtems_id id;
+
+	sc = rtems_task_create(
+		rtems_build_name('D', 'H', 'C', 'P'),
+		RTEMS_MAXIMUM_PRIORITY - 1,
+		2 * RTEMS_MINIMUM_STACK_SIZE,
+		RTEMS_DEFAULT_MODES,
+		RTEMS_FLOATING_POINT,
+		&id
+	);
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	sc = rtems_task_start(id, network_dhcpcd_task, 0);
+	assert(sc == RTEMS_SUCCESSFUL);
+}
+
+static void
 start_shell(void)
 {
 	rtems_status_code sc = rtems_shell_init(
@@ -75,6 +111,26 @@ start_shell(void)
 }
 
 static void
+create_wlandev(void)
+{
+	int exit_code;
+	char *ifcfg[] = {
+		"ifconfig",
+		"wlan0",
+		"create",
+		"wlandev",
+		"rtwn0",
+		"up",
+		NULL
+	};
+
+	exit_code = rtems_bsd_command_ifconfig(RTEMS_BSD_ARGC(ifcfg), ifcfg);
+	if(exit_code != EXIT_SUCCESS) {
+		printf("ERROR while creating wlan0.");
+	}
+}
+
+static void
 Init(rtems_task_argument arg)
 {
 	rtems_status_code sc;
@@ -82,13 +138,14 @@ Init(rtems_task_argument arg)
 	(void)arg;
 
 	grisp_led_set1(false, false, false);
-	grisp_led_set2(true, true, true);
+	grisp_led_set2(true, false, false);
 	puts("\nGRISP RTEMS SD Demo\n");
 	grisp_init_sd_card();
 	grisp_init_lower_self_prio();
 	grisp_init_libbsd();
 
 	/* Wait for the SD card */
+	grisp_led_set2(true, false, true);
 	sc = grisp_init_wait_for_sd();
 	if(sc == RTEMS_SUCCESSFUL) {
 		printf("SD: OK\n");
@@ -97,6 +154,12 @@ Init(rtems_task_argument arg)
 		grisp_led_set2(true, false, false);
 	}
 
+	start_network_dhcpcd();
+	grisp_led_set2(false, false, true);
+	/* Some time for USB device to be detected. */
+	rtems_task_wake_after(RTEMS_MILLISECONDS_TO_TICKS(4000));
+	create_wlandev();
+	grisp_led_set2(true, true, true);
 	start_shell();
 
 	exit(0);
