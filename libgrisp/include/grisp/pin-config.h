@@ -48,6 +48,11 @@ extern "C" {
 #define GRISP_SAF_RESET	{PIO_PA12, PIOA, ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT}
 #define GRISP_SAF_IRQ	{PIO_PC16, PIOC, ID_PIOC, PIO_INPUT,    PIO_PULLUP | PIO_IT_LOW_LEVEL}
 #define GRISP_WLAN_EN	{PIO_PA22, PIOA, ID_PIOA, PIO_OUTPUT_1, PIO_DEFAULT}
+#define GRISP_MODE_1	{PIO_PA6 , PIOA, ID_PIOA, PIO_INPUT,    PIO_PULLUP}
+#define GRISP_MODE_2	{PIO_PD9 , PIOD, ID_PIOD, PIO_INPUT,    PIO_PULLUP}
+#define GRISP_MODE_3	{PIO_PC17, PIOC, ID_PIOC, PIO_INPUT,    PIO_PULLUP}
+#define GRISP_MODE_4	{PIO_PD11, PIOD, ID_PIOD, PIO_INPUT,    PIO_PULLUP}
+#define GRISP_MODE_5	{PIO_PC10, PIOC, ID_PIOC, PIO_INPUT,    PIO_PULLUP}
 
 #define GRISP_PIN_CONFIG                                                      \
   /* Console */                                                               \
@@ -106,11 +111,11 @@ extern "C" {
   GRISP_WLAN_EN,                                                              \
                                                                               \
   /* Jumpers */                                                               \
-  {PIO_PA6 , PIOA, ID_PIOA, PIO_INPUT, PIO_PULLUP},                           \
-  {PIO_PD9 , PIOD, ID_PIOD, PIO_INPUT, PIO_PULLUP},                           \
-  {PIO_PC17, PIOC, ID_PIOC, PIO_INPUT, PIO_PULLUP},                           \
-  {PIO_PD11, PIOD, ID_PIOD, PIO_INPUT, PIO_PULLUP},                           \
-  {PIO_PC10, PIOC, ID_PIOC, PIO_INPUT, PIO_PULLUP},                           \
+  GRISP_MODE_1,                                                               \
+  GRISP_MODE_2,                                                               \
+  GRISP_MODE_3,                                                               \
+  GRISP_MODE_4,                                                               \
+  GRISP_MODE_5,                                                               \
                                                                               \
   /* LEDs */                                                                  \
   GRISP_LED_1R, GRISP_LED_1G, GRISP_LED_1B,                                   \
