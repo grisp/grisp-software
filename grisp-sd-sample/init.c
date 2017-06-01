@@ -43,6 +43,7 @@
 #include <rtems/score/armv7m.h>
 #include <rtems/shell.h>
 #include <rtems/stringto.h>
+#include <rtems/ftpd.h>
 #include <machine/rtems-bsd-commands.h>
 
 #include <bsp.h>
@@ -59,6 +60,17 @@
 const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
 const uint32_t atsam_matrix_ccfg_sysio = GRISP_MATRIX_CCFG_SYSIO;
+
+struct rtems_ftpd_configuration rtems_ftpd_configuration = {
+	.priority = 100,
+	.max_hook_filesize = 0,
+	.port = 21,
+	.hooks = NULL,
+	.root = NULL,
+	.tasks_count = 4,
+	.idle = 5 * 60,
+	.access = 0
+};
 
 static void
 network_dhcpcd_task(rtems_task_argument arg)
@@ -130,6 +142,34 @@ create_wlandev(void)
 	}
 }
 
+static int
+command_startftp(int argc, char *argv[])
+{
+	rtems_status_code sc;
+
+	(void) argc;
+	(void) argv;
+
+	sc = rtems_initialize_ftpd();
+	if(sc == RTEMS_SUCCESSFUL) {
+		printf("FTP started.\n");
+	} else {
+		printf("ERROR: FTP could not be started.\n");
+	}
+
+	return 0;
+}
+
+rtems_shell_cmd_t rtems_shell_STARTFTP_Command = {
+	"startftp",          /* name */
+	"startftp",          /* usage */
+	"net",               /* topic */
+	command_startftp,    /* command */
+	NULL,                /* alias */
+	NULL,                /* next */
+	0, 0, 0
+};
+
 static void
 Init(rtems_task_argument arg)
 {
@@ -151,7 +191,7 @@ Init(rtems_task_argument arg)
 		printf("SD: OK\n");
 	} else {
 		printf("ERROR: SD could not be mounted after timeout\n");
-		grisp_led_set2(true, false, false);
+		grisp_led_set1(true, false, false);
 	}
 
 	start_network_dhcpcd();
@@ -228,7 +268,8 @@ Init(rtems_task_argument arg)
   &rtems_shell_HOSTNAME_Command, \
   &rtems_shell_SYSCTL_Command, \
   &rtems_shell_VMSTAT_Command, \
-  &rtems_shell_WLANSTATS_Command
+  &rtems_shell_WLANSTATS_Command, \
+  &rtems_shell_STARTFTP_Command
 
 #define CONFIGURE_SHELL_COMMANDS_ALL
 
