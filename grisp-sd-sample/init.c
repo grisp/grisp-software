@@ -174,6 +174,7 @@ static void
 Init(rtems_task_argument arg)
 {
 	rtems_status_code sc;
+	Pin mode1 = GRISP_MODE_1;
 
 	(void)arg;
 
@@ -187,7 +188,7 @@ Init(rtems_task_argument arg)
 	/* Wait for the SD card */
 	grisp_led_set2(true, false, true);
 	sc = grisp_init_wait_for_sd();
-	if(sc == RTEMS_SUCCESSFUL) {
+	if (sc == RTEMS_SUCCESSFUL) {
 		printf("SD: OK\n");
 	} else {
 		printf("ERROR: SD could not be mounted after timeout\n");
@@ -196,9 +197,14 @@ Init(rtems_task_argument arg)
 
 	start_network_dhcpcd();
 	grisp_led_set2(false, false, true);
-	/* Some time for USB device to be detected. */
-	rtems_task_wake_after(RTEMS_MILLISECONDS_TO_TICKS(4000));
-	create_wlandev();
+	if (PIO_Get(&mode1) != 0) {
+		printf("Mode 1 set: Create WLAN device.\n");
+		/* Some time for USB device to be detected. */
+		rtems_task_wake_after(RTEMS_MILLISECONDS_TO_TICKS(4000));
+		create_wlandev();
+	} else {
+		printf("Mode 1 cleared: Skip creating WLAN device.\n");
+	}
 	grisp_led_set2(true, true, true);
 	start_shell();
 
