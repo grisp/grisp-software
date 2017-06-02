@@ -333,7 +333,10 @@ Init(rtems_task_argument arg)
 	(void)arg;
 
 	init_led_early();
-	puts("\nGRISP bootloader\n");
+	puts("\n----------------");
+	puts("GRISP bootloader");
+	puts("----------------");
+	printf("Version: %s (Build %s)\n", GRISP_BL_VERSION, GRISP_BL_BUILD_DATE);
 	grisp_init_sd_card();
 	grisp_init_lower_self_prio();
 	grisp_init_libbsd();
