@@ -48,18 +48,14 @@
 
 #include <grisp/pin-config.h>
 #include <grisp/led.h>
+#include <grisp/init.h>
 
 #include <inih/ini.h>
 
 #define STACK_SIZE_INIT_TASK	(64 * 1024)
 #define STACK_SIZE_SHELL	(64 * 1024)
-#define STACK_SIZE_MEDIA_SERVER	(64 * 1024)
 
-#define PRIO_INIT_TASK		(RTEMS_MAXIMUM_PRIORITY - 1)
-#define PRIO_MEDIA_SERVER	200
 #define PRIO_SHELL		10
-
-#define EVT_MOUNTED		RTEMS_EVENT_9
 
 /* NOTE: With the default linker commands, only the internal SRAM is used. So it
  * is save to overwrite the external one. */
@@ -79,7 +75,6 @@ static int timeout_in_seconds = 3;
 static char image_path[PATH_MAX + 1] = "/media/mmcsd-0-0/grisp.bin";
 
 static rtems_id led_timer_id = RTEMS_INVALID_ID;
-static rtems_id wait_mounted_task_id = RTEMS_INVALID_ID;
 
 static int
 ini_value_copy(void *dst, size_t dst_size, const char *value)
@@ -196,75 +191,6 @@ led_not_ok(void)
 	assert(sc == RTEMS_SUCCESSFUL);
 }
 
-static rtems_status_code
-media_listener(rtems_media_event event, rtems_media_state state,
-    const char *src, const char *dest, void *arg)
-{
-	printf(
-		"media listener: event = %s, state = %s, src = %s",
-		rtems_media_event_description(event),
-		rtems_media_state_description(state),
-		src
-	);
-
-	if (dest != NULL) {
-		printf(", dest = %s", dest);
-	}
-
-	if (arg != NULL) {
-		printf(", arg = %p\n", arg);
-	}
-
-	printf("\n");
-
-	if (event == RTEMS_MEDIA_EVENT_MOUNT &&
-	    state == RTEMS_MEDIA_STATE_SUCCESS) {
-		rtems_event_send(wait_mounted_task_id, EVT_MOUNTED);
-	}
-
-	return RTEMS_SUCCESSFUL;
-}
-
-static rtems_status_code
-wait_for_sd(void)
-{
-	puts("waiting for SD...\n");
-	rtems_status_code sc;
-	const rtems_interval max_mount_time = 3000 /
-	    rtems_configuration_get_milliseconds_per_tick();
-	rtems_event_set out;
-
-	sc = rtems_event_receive(EVT_MOUNTED, RTEMS_WAIT, max_mount_time, &out);
-	assert(sc == RTEMS_SUCCESSFUL || sc == RTEMS_TIMEOUT);
-
-	return sc;
-}
-
-static void
-init_sd_card(void)
-{
-	rtems_status_code sc;
-
-	wait_mounted_task_id = rtems_task_self();
-
-	sc = rtems_bdbuf_init();
-	assert(sc == RTEMS_SUCCESSFUL);
-
-	sc = rtems_media_initialize();
-	assert(sc == RTEMS_SUCCESSFUL);
-
-	sc = rtems_media_listener_add(media_listener, NULL);
-	assert(sc == RTEMS_SUCCESSFUL);
-
-	sc = rtems_media_server_initialize(
-	    PRIO_MEDIA_SERVER,
-	    STACK_SIZE_MEDIA_SERVER,
-	    RTEMS_DEFAULT_MODES,
-	    RTEMS_DEFAULT_ATTRIBUTES
-	    );
-	assert(sc == RTEMS_SUCCESSFUL);
-}
-
 static void
 print_status(bool ok)
 {
@@ -335,7 +261,8 @@ load_via_file(const char *file)
 			assert(sc == RTEMS_SUCCESSFUL);
 
 			grisp_led_set1(false, true, false);
-			/* sleep(1); */
+			/* Enough time to print all messages. */
+			rtems_task_wake_after(RTEMS_MILLISECONDS_TO_TICKS(100));
 
 			start_app_from_ram();
 
@@ -398,31 +325,6 @@ service_mode(void)
 }
 
 static void
-set_init_prio(void)
-{
-	rtems_status_code sc;
-	rtems_task_priority oldprio;
-
-	/* Let other tasks run to complete background work */
-	sc = rtems_task_set_priority(RTEMS_SELF,
-	    (rtems_task_priority)PRIO_INIT_TASK, &oldprio);
-	assert(sc == RTEMS_SUCCESSFUL);
-}
-
-static void
-init_libbsd(void)
-{
-	rtems_status_code sc;
-
-	sc = rtems_bsd_initialize();
-	assert(sc == RTEMS_SUCCESSFUL);
-
-	/* Let the callout timer allocate its resources */
-	sc = rtems_task_wake_after( 2 );
-	assert(sc == RTEMS_SUCCESSFUL);
-}
-
-static void
 Init(rtems_task_argument arg)
 {
 	bool service_mode_requested;
@@ -432,13 +334,13 @@ Init(rtems_task_argument arg)
 
 	init_led_early();
 	puts("\nGRISP bootloader\n");
-	init_sd_card();
-	set_init_prio();
-	init_libbsd();
+	grisp_init_sd_card();
+	grisp_init_lower_self_prio();
+	grisp_init_libbsd();
 	init_led_timer();
 
 	/* Wait for the SD card */
-	sc = wait_for_sd();
+	sc = grisp_init_wait_for_sd();
 	if(sc == RTEMS_SUCCESSFUL) {
 		evaluate_ini_file(ini_file);
 
