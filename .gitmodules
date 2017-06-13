@@ -10,6 +10,3 @@
 [submodule "libinih/inih"]
 	path = libinih/inih
 	url = https://github.com/grisp/inih
-[submodule "openocd"]
-	path = openocd
-	url = git://git.code.sf.net/p/openocd/code

@@ -14,13 +14,6 @@ GRISP
     cd rtems-source-builder
     ./source-builder/sb-check
 
-- openOCD has the following dependencies:
-  - libtool
-  - pkg-config >= 0.23 (or compatible)
-  - autoconf >= 2.64
-  - automake >= 1.9
-  - texinfo
-
 == Quick Start Guide
 
 You can build the whole toolchain by running +./build/build.sh+. See
