@@ -22,6 +22,11 @@ You can build the whole toolchain by running +./build/build.sh+. See
 To build the simple RTEMS sample application, go to +grisp-simple-sample+ and
 call +make+.
 
+If you want to use OpenOCD, you have to make sure that you have read and write
+access to the USB device. On a Linux system using udev, you can copy the
+udev-rule from build/99-grisp.rule to /etc/udev/rules.d/ for that. The rule also
+provides a fixed name for the serial console (/dev/ttyGRiSP).
+
 == Directory Structure
 
 The following directory structure is used in this project:
@@ -83,3 +88,20 @@ image_path = /media/mmcsd-0-0/grisp.bin
 All values are optional and in case something is missing default values will be
 used (presented in the listing above). Once the timeout expired without user
 input the automatic application load sequence starts.
+
+== Debugging
+
+It is possible to debug an application using the on-board FTDI to SWD adapter.
+First build and install OpenOCD by running `./build/build-openocd.sh`.
+
+Place a SD with some sample application into the target. This takes care that
+the bootloader starts an application. The debug scripts will wait for this and
+then overwrite the application that is booted by the bootloader with the one
+that should be debugged.
+
+After that you should start openocd on one console using
+`./build/debug-start-openocd.sh`. This starts an GDB-Server. Do not terminate
+the process. You can then start a gdb that connects to the server using
+`./build/debug-start-gdb.sh path/to/app.exe`. The script adds a `reset` command
+to the normal gdb that restarts the target and reloads the application. Note
+that for bigger applications, that might need quite some time.
