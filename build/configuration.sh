@@ -16,7 +16,7 @@ LIBGRISP_SOURCE_DIR="${PROJECTDIR}/libgrisp"
 BSP_CONFIG_OPT=( \
 	"--disable-tests" \
 	"--disable-networking" \
-	"--enable-chip=samv71q21" \
+	"--enable-chip=same70q21" \
 	"--enable-sdram=is42s16320f-7bl" \
 	"ATSAM_CONSOLE_DEVICE_TYPE=1" \
 	"ATSAM_CONSOLE_DEVICE_INDEX=2" \
