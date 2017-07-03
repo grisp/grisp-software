@@ -56,6 +56,7 @@
 #define STACK_SIZE_SHELL	(64 * 1024)
 
 #define PRIO_SHELL		150
+#define PRIO_LED_TASK		250
 
 const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
@@ -142,6 +143,41 @@ create_wlandev(void)
 	}
 }
 
+static void
+led_task(rtems_task_argument arg)
+{
+	bool state = false;
+
+	(void)arg;
+
+	while(true) {
+		state = !state;
+		grisp_led_set1(!state, !state, state);
+		grisp_led_set2(state, state, !state);
+		rtems_task_wake_after(RTEMS_MILLISECONDS_TO_TICKS(250));
+	}
+}
+
+static void
+init_led(void)
+{
+	rtems_status_code sc;
+	rtems_id id;
+
+	sc = rtems_task_create(
+		rtems_build_name('L', 'E', 'D', ' '),
+		PRIO_LED_TASK,
+		RTEMS_MINIMUM_STACK_SIZE,
+		RTEMS_DEFAULT_MODES,
+		RTEMS_DEFAULT_ATTRIBUTES,
+		&id
+	);
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	sc = rtems_task_start(id, led_task, 0);
+	assert(sc == RTEMS_SUCCESSFUL);
+}
+
 static int
 command_startftp(int argc, char *argv[])
 {
@@ -205,7 +241,7 @@ Init(rtems_task_argument arg)
 	} else {
 		printf("Mode 1 cleared: Skip creating WLAN device.\n");
 	}
-	grisp_led_set2(true, true, true);
+	init_led();
 	start_shell();
 
 	exit(0);
