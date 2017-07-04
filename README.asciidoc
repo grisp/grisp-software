@@ -80,8 +80,6 @@ Sample grisp.ini (showing the default values):
 ----
 [boot]
 timeout_in_seconds = 3
-
-[file]
 image_path = /media/mmcsd-0-0/grisp.bin
 ----
 

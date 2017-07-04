@@ -99,17 +99,19 @@ ini_file_handler(void *arg, const char *section, const char *name,
 
 	(void)arg;
 
-	if (strcmp(section, "file") == 0) {
+	if (strcmp(section, "boot") == 0) {
 		if (strcmp(name, "image_path") == 0) {
 			ok = ini_value_copy(&image_path[0], sizeof(image_path),
 			    value);
 		}
-	} else if (strcmp(section, "boot") == 0) {
 		if (strcmp(name, "timeout_in_seconds") == 0) {
 			rtems_status_code sc = rtems_string_to_int(value,
 			    &timeout_in_seconds, NULL, 10);
 			ok = sc == RTEMS_SUCCESSFUL;
 		}
+	} else {
+		/* All other sections are not relevant */
+		ok = 1;
 	}
 
 	if (!ok) {
