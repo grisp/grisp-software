@@ -17,4 +17,4 @@ export PATH="${PREFIX}/bin:${PATH}"
 openocd -s "${TARGET}/share/openocd/scripts/" \
 	-f "${SCRIPTDIR}/src/openocd-grisp.cfg" \
 	-c "init" \
-	-c "reset halt"
+	-c "reset halt" "$@"

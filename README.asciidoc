@@ -87,6 +87,18 @@ All values are optional and in case something is missing default values will be
 used (presented in the listing above). Once the timeout expired without user
 input the automatic application load sequence starts.
 
+=== Updating the Boot Loader
+
+For updating the bootloader build OpenOCD by running `./build/build-openocd.sh`.
+You can then update the boot loader with the following call:
+
+----
+./build/debug-load-flash.sh grisp-bootloader/binaries/bootloader.exe
+----
+
+The process will need quite some time (about 30 seconds for loading and about a
+minute for verify).
+
 == Debugging
 
 It is possible to debug an application using the on-board FTDI to SWD adapter.
