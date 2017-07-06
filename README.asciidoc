@@ -99,6 +99,10 @@ You can then update the boot loader with the following call:
 The process will need quite some time (about 30 seconds for loading and about a
 minute for verify).
 
+If OpenOCD is failing due to libusb related issues, you might need to make
+adjustments specific to your operating system. Please see the libusb FAQ:
+https://github.com/libusb/libusb/wiki/FAQ
+
 == Debugging
 
 It is possible to debug an application using the on-board FTDI to SWD adapter.
