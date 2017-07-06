@@ -196,10 +196,12 @@ grisp_saf1761_basic_init(void)
 	 *
 	 * NOTE: 17 ns is taken from SAF1761 data sheet.
 	 */
-	const uint32_t nwe_setup = 2;
-	const uint32_t ncs_wr_setup = 1;
+	/* NOTE: nwe_setup, ncs_wr_setup and nwe_pulse have been increased
+	 * by 2 ticks to have enough reserve. */
+	const uint32_t nwe_setup = 2 + 2;
+	const uint32_t ncs_wr_setup = 1 + 2;
 	const uint32_t nwe_hold = 2;
-	const uint32_t nwe_pulse = 17 / ns_per_tick + 1;
+	const uint32_t nwe_pulse = 17 / ns_per_tick + 1 + 2;
 	const uint32_t ncs_wr_pulse = nwe_pulse + 2;
 	const uint32_t nwe_cycle = nwe_setup + nwe_pulse + nwe_hold;
 
@@ -219,17 +221,17 @@ grisp_saf1761_basic_init(void)
 	 * NOTE: 22 and 36 ns is taken from SAF1761 data sheet. The x ck depends
 	 * on the 36 ns. But it has to be at least one.
 	 */
-	/* FIXME: nrd_setup, ncs_rd_setup and nrd_cycle_min have been increased
-	 * by 8 ticks. Without this, the controller doesn't generate interrupts
+	/* NOTE: nrd_setup, ncs_rd_setup and nrd_pulse have been increased
+	 * by 4 ticks. Without this, the controller doesn't generate interrupts
 	 * cleanly. */
-	const uint32_t nrd_setup = 1 + 8;
-	const uint32_t ncs_rd_setup = 0 + 8;
-	const uint32_t nrd_pulse = 22 / ns_per_tick + 1;
+	const uint32_t nrd_setup = 1 + 4;
+	const uint32_t ncs_rd_setup = 0 + 4;
+	const uint32_t nrd_pulse = 22 / ns_per_tick + 1 + 4;
 	const uint32_t nrd_hold = 1;
 	const uint32_t ncs_rd_pulse = nrd_pulse + nrd_setup + nrd_hold;
-	const uint32_t nrd_cycle_min = 36 / ns_per_tick + 8;
+	const uint32_t nrd_cycle_min = 36 / ns_per_tick + 1;
 	const uint32_t nrd_cycle =
-	    nrd_cycle_min > (nrd_pulse + nrd_setup + nrd_hold) ?
+	    nrd_cycle_min > (nrd_pulse + nrd_setup + nrd_hold + 1) ?
 	    nrd_cycle_min : nrd_pulse + nrd_setup + nrd_hold + 1;
 
 	/* Enable SMC */
