@@ -11,4 +11,7 @@ PROJECTDIR="${SCRIPTDIR}/../"
 
 ELFFILE=$1
 
-${SCRIPTDIR}/debug-start-openocd.sh -c "program \"${ELFFILE}\" verify reset exit"
+${SCRIPTDIR}/debug-start-openocd.sh \
+	-c "reset" -c "halt" -c "program \"${ELFFILE}\"" \
+	-c "reset" -c "halt" -c "verify_image_checksum \"${ELFFILE}\"" \
+	-c "reset" -c "exit"
