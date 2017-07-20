@@ -326,6 +326,28 @@ service_mode(void)
 	start_shell();
 }
 
+static int
+command_boot(int argc, char *argv[])
+{
+	if (argc != 2) {
+		printf("Need exactly one file to boot as argument.\n");
+	} else {
+		load_via_file(argv[1]);
+	}
+
+	return 0;
+}
+
+rtems_shell_cmd_t grisp_shell_BOOT_Command = {
+	"boot",              /* name */
+	"boot <file>  # boot from the given file", /* usage */
+	"grisp",             /* topic */
+	command_boot,        /* command */
+	NULL,                /* alias */
+	NULL,                /* next */
+	0, 0, 0
+};
+
 static void
 Init(rtems_task_argument arg)
 {
@@ -421,6 +443,9 @@ Init(rtems_task_argument arg)
  */
 #include <rtems/netcmds-config.h>
 #define CONFIGURE_SHELL_COMMANDS_INIT
+#define CONFIGURE_SHELL_USER_COMMANDS \
+	&grisp_shell_BOOT_Command, \
+	&rtems_shell_BLKSTATS_Command
 #define CONFIGURE_SHELL_COMMANDS_ALL
 
 #include <rtems/shellconfig.h>
