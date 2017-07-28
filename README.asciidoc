@@ -52,6 +52,18 @@ All installations are made inside the +rtems-install+ subdirectory in the base
 directory of the repository. To change the install location edit the +PREFIX+ in
 +build/configuration.sh+.
 
+=== Re-Building only target specific RTEMS libs
+
+Since building the toolchain takes a lot of time and since the toolchain
+changes less often than the rest of the system you can also just rebuild
+RTEMS and its libs.
+
+To do that delete the
+`rtems-install/rtems-4.12/arm-rtems4.12/atsamv` directory and then do a
+
+   ./build/build.sh --no-toolchain --no-bootstrap
+
+
 === Cleaning
 
 Normally, running `./build/build.sh` (or any other of the individual build
