@@ -63,7 +63,14 @@ To do that delete the
 
    ./build/build.sh --no-toolchain --no-bootstrap
 
+=== Updating the submodules from githib
 
+When you want to rebuild with some new version from the Git repos you need to make
+sure that you update the sumodules:
+
+   git pull
+   git submodule update
+   
 === Cleaning
 
 Normally, running `./build/build.sh` (or any other of the individual build
