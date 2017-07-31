@@ -1,3 +1,0 @@
-Note that it is currently necessary to remove WiFi support from libbsd.
-Otherwise it won't fit into the internal memory. To do that, the lines regarding
-WiFi have to be removed from nexus-devices.h and libbsd has to be rebuild.
