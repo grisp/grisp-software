@@ -19,8 +19,8 @@ PROJECTDIR="${SCRIPTDIR}/../"
 
 # Configuration
 source "${SCRIPTDIR}/configuration.sh"
-BUILD_DIR="${PROJECTDIR}/build/b-$BSP_NAME"
-export PATH="${PREFIX}/bin:${PATH}"
+ADDPATH=`readlink -f "${PREFIX}/bin"`
+export PATH="${ADDPATH}:${PATH}"
 
 export PREPROMPT="%B(GRISP-RTEMS)%b "
 
