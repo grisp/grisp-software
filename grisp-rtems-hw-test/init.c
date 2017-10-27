@@ -56,10 +56,37 @@
 #include <grisp/pin-config.h>
 #include <grisp/eeprom.h>
 
+#include <linux/i2c.h>
+
 #include <inih/ini.h>
 #include <machine/rtems-bsd-commands.h>
 
 #define N_ELE(arr) (sizeof(arr)/sizeof(arr[0]))
+
+#define DS2482_ADDR 0x18
+
+#define DS2482_CMD_DRST 0xF0
+#define DS2482_CMD_SRP 0xE1
+#define DS2482_CMD_WCFG 0xD2
+#define DS2482_CMD_1WRS 0xB4
+#define DS2482_CMD_1WSB 0x87
+#define DS2482_CMD_1WWB 0xA5
+#define DS2482_CMD_1WRB 0x96
+#define DS2482_CMD_1WT 0x78
+
+#define DS2482_CFG_1WS 0x8
+#define DS2482_CFG_SPU 0x4
+#define DS2482_CFG_APU 0x1
+#define DS2482_CFG_GEN(flags) (((~((flags)<<4))&0xf0) | (flags))
+
+#define DS2482_STAT_DIR 0x80
+#define DS2482_STAT_TSB 0x40
+#define DS2482_STAT_SBR 0x20
+#define DS2482_STAT_RST 0x10
+#define DS2482_STAT_LL  0x08
+#define DS2482_STAT_SD  0x04
+#define DS2482_STAT_PPD 0x02
+#define DS2482_STAT_1WB 0x01
 
 #define PMOD_CMPS_ADDR 0x1e
 #define PMOD_CMPS_SIZE 13
@@ -780,6 +807,77 @@ test_ping(void)
 	return passed;
 }
 
+static bool
+ds2482_master_reset(int file)
+{
+	uint8_t buf[] = {DS2482_CMD_DRST};
+	uint8_t rd[1] = {0};
+	struct i2c_rdwr_ioctl_data work_queue;
+	struct i2c_msg msg[] = {
+		{
+			.addr = DS2482_ADDR,
+			.flags = 0,
+			.len = sizeof(buf),
+			.buf = buf,
+		},{
+			.addr = DS2482_ADDR,
+			.flags = I2C_M_RD,
+			.len = sizeof(rd),
+			.buf = rd,
+		}
+	};
+
+	work_queue.msgs = msg;
+	work_queue.nmsgs = sizeof(msg)/sizeof(msg[0]);
+
+	if (ioctl(file, I2C_RDWR, &work_queue) < 0) {
+		puts("Resetting 1-Wire master failed.");
+		return false;
+	}
+
+	if ((rd[0] & DS2482_STAT_RST) == 0) {
+		printf("Reset bit of 1-Wire not set: 0x%02x\n", rd[0]);
+		return false;
+	}
+
+	return true;
+}
+
+static bool
+test_1wire(void)
+{
+	bool passed = true;
+	int i2c_file;
+
+	puts("----- 1wire test");
+
+	if (passed) {
+		i2c_file = open(ATSAM_I2C_0_BUS_PATH, O_RDWR);
+		if (i2c_file < 0) {
+			passed = false;
+			printf("Opening I2C failed: %s\n", strerror(errno));
+		}
+	}
+
+	if (passed) {
+		/* Only do a reset to see whether the master is there. */
+		passed = ds2482_master_reset(i2c_file);
+	}
+
+	if (i2c_file >= 0) {
+		close(i2c_file);
+	}
+
+	if (!passed) {
+		puts("EEEEE 1wire test FAILED.");
+	}
+	else {
+		puts("***** 1wire test passed.");
+	}
+
+	return passed;
+}
+
 static void
 Init(rtems_task_argument arg)
 {
@@ -797,7 +895,7 @@ Init(rtems_task_argument arg)
 	puts(" - Loopback on UART (TxD -> RxD, RTS -> CTS)");
 	puts("Prepare a WiFi access point with a configuration that matches the one in grisp.ini.");
 
-	grisp_led_set1(false, false, false);
+	grisp_led_set1(false, false, true);
 	grisp_led_set2(false, false, false);
 
 	if (passed) {
@@ -861,6 +959,9 @@ Init(rtems_task_argument arg)
 		passed = test_ping();
 	}
 	prepare_i2c();
+	if (passed) {
+		passed = test_1wire();
+	}
 	if (passed) {
 		passed = test_i2c_cmps();
 	}
