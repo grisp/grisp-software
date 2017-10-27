@@ -17,7 +17,7 @@ $(BUILDDIR):
 	mkdir $(BUILDDIR)
 
 $(APP).exe: $(APP_OBJS)
-	$(CCLINK) $^ -lgrisp -o $@
+	$(CCLINK) $^ -lgrisp -linih -lbsd -lm -o $@
 
 $(APP).bin: $(APP).exe
 	$(OBJCOPY) -O binary $^ $@

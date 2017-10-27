@@ -37,11 +37,12 @@
 #include <unistd.h>
 #include <termios.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 #include <sys/ioctl.h>
 
 #include <bsp.h>
-
 #include <bsp/atsam-spi.h>
 #include <bsp/spi.h>
 #include <bsp/i2c.h>
@@ -50,15 +51,23 @@
 #include <dev/i2c/eeprom.h>
 #include <dev/i2c/i2c.h>
 
+#include <grisp/init.h>
 #include <grisp/led.h>
 #include <grisp/pin-config.h>
 #include <grisp/eeprom.h>
+
+#include <inih/ini.h>
+#include <machine/rtems-bsd-commands.h>
 
 #define N_ELE(arr) (sizeof(arr)/sizeof(arr[0]))
 
 #define PMOD_CMPS_ADDR 0x1e
 #define PMOD_CMPS_SIZE 13
 #define PMOD_CMPS_PAGE_SIZE 1
+
+#define MAX_SSID_LEN 32
+#define MAX_IP_LEN (sizeof("255.255.255.255"))
+#define WLAN_NAME "wlan0"
 
 #define DIO11 {PIO_PC12, PIOC, ID_PIOC, PIO_OUTPUT_0, PIO_DEFAULT}
 #define DIO21 {PIO_PC13, PIOC, ID_PIOC, PIO_OUTPUT_0, PIO_DEFAULT}
@@ -89,6 +98,93 @@ static uint8_t test_rx_array[3];
 static uint8_t test_tx_array[3];
 static const char cmps_path[] = "/dev/i2c-0.compass-0";
 static const char uart_path[] = "/dev/ttyUSART0";
+static const char ini_file[] = "/media/mmcsd-0-0/grisp.ini";
+static char ssid[MAX_SSID_LEN + 1] = "";
+static char ping_ip[MAX_IP_LEN] = "";
+static char net_ip[MAX_IP_LEN] = "";
+static char net_mask[MAX_IP_LEN] = "";
+
+static int
+ini_value_copy(void *dst, size_t dst_size, const char *value)
+{
+	int ok = 1;
+	size_t value_size = strlen(value) + 1;
+
+	if (value_size <= dst_size) {
+		memcpy(dst, value, value_size);
+	} else {
+		ok = 0;
+	}
+
+	return ok;
+}
+
+static int
+ini_file_handler(void *arg, const char *section, const char *name,
+    const char *value)
+{
+	int ok = 0;
+
+	(void)arg;
+
+	if (strcmp(section, "hw-test") == 0) {
+		if (strcmp(name, "wlan_name") == 0) {
+			ok = ini_value_copy(ssid, sizeof(ssid), value);
+		}
+		if (strcmp(name, "net_ip") == 0) {
+			ok = ini_value_copy(net_ip, sizeof(net_ip), value);
+		}
+		if (strcmp(name, "net_mask") == 0) {
+			ok = ini_value_copy(net_mask, sizeof(net_mask), value);
+		}
+		if (strcmp(name, "ping_ip") == 0) {
+			ok = ini_value_copy(ping_ip, sizeof(ping_ip), value);
+		}
+	} else {
+		/* All other sections are not relevant */
+		ok = 1;
+	}
+
+	if (!ok) {
+		printf("boot: error in configuration file: section \"%s\", name \"%s\", value \"%s\"\n",
+		    section, name, value);
+		ok = 1;
+	}
+
+	return ok;
+}
+
+static bool
+evaluate_ini_file(const char *filename)
+{
+	int rv;
+	bool passed = true;
+
+	puts("----- parse configuration");
+
+	if (passed) {
+		rv = ini_parse(filename, ini_file_handler, NULL);
+		passed = (rv == 0);
+	}
+	if (passed) {
+		passed = (strnlen(ssid, sizeof(ssid)) > 1);
+	}
+	if (passed) {
+		passed = (strnlen(net_ip, sizeof(net_ip)) > 1);
+	}
+	if (passed) {
+		passed = (strnlen(net_mask, sizeof(net_mask)) > 1);
+	}
+	if (passed) {
+		passed = (strnlen(ping_ip, sizeof(ping_ip)) > 1);
+	}
+	if (rv == 0) {
+		puts("***** parse configuration passed.");
+	} else {
+		puts("EEEEE parse configuration FAILED.");
+	}
+	return (rv == 0);
+}
 
 static int
 init_spi(void)
@@ -247,21 +343,19 @@ test_i2c_eeprom(void)
 	err = grisp_eeprom_init();
 	assert(err == 0);
 
+	memset(&eeprom.mac_addr, 0, sizeof(eeprom.mac_addr));
+
 	if (err == 0) {
 		eeprom.sig_version = GRISP_EEPROM_SIG_VERSION;
 		/* Ask for values */
 		puts("Please enter the new EEPROM content in the following format:\n"
-		    "Format (integers): serial, batch_nr, prod_year, prod_month, prod_day, vers_major, vers_minor, ass_var, mac_addr(xx:yy:zz:aa:bb:cc)"
-		    );
-		rv = scanf("%lu, %hu, %hu, %hhu, %hhu, %hhu, %hhu, %hhu, %hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+		    "Format (integers): serial, batch_nr, prod_year, prod_month, prod_day, vers_major, vers_minor, ass_var");
+		rv = scanf("%lu, %hu, %hu, %hhu, %hhu, %hhu, %hhu, %hhu",
 		    &eeprom.serial, &eeprom.batch_nr, &eeprom.prod_year,
 		    &eeprom.prod_month, &eeprom.prod_day, &eeprom.vers_major,
-		    &eeprom.vers_minor, &eeprom.ass_var,
-		    &eeprom.mac_addr[0], &eeprom.mac_addr[1],
-		    &eeprom.mac_addr[2], &eeprom.mac_addr[3],
-		    &eeprom.mac_addr[4], &eeprom.mac_addr[5]);
-		if (rv != 14) {
-			printf("Reading failed (%s). Don't write EEPROM.\n",
+		    &eeprom.vers_minor, &eeprom.ass_var);
+		if (rv != 8) {
+			printf("Invalid input (%s). Don't write EEPROM.\n",
 			    strerror(errno));
 			err = 1;
 		}
@@ -543,6 +637,149 @@ test_uart(void)
 	return passed;
 }
 
+static bool
+prepare_libbsd(void)
+{
+	rtems_status_code sc;
+	int exit_code;
+	char *ifcfg[] = {
+		"ifconfig", WLAN_NAME, "create", "wlandev", "rtwn0", "up", NULL
+	};
+	bool passed = true;
+
+	puts("----- prepare libbsd");
+	grisp_init_sd_card();
+	grisp_init_lower_self_prio();
+	grisp_init_libbsd();
+
+	if (passed) {
+		sc = grisp_init_wait_for_sd();
+		if (sc == RTEMS_SUCCESSFUL) {
+			printf("SD: OK\n");
+		} else {
+			printf("ERROR: SD could not be mounted after timeout\n");
+			passed = false;
+		}
+	}
+
+	if (passed) {
+		/* Some time for USB device to be detected. */
+		rtems_task_wake_after(RTEMS_MILLISECONDS_TO_TICKS(4000));
+		exit_code = rtems_bsd_command_ifconfig(
+		    RTEMS_BSD_ARGC(ifcfg), ifcfg);
+		if(exit_code != EXIT_SUCCESS) {
+			printf("ERROR while creating wlan.");
+			passed = false;
+		}
+	}
+
+	if (passed) {
+		puts("***** prepare libbsd passed.");
+	} else {
+		puts("EEEEE prepare libbsd FAILED.");
+	}
+
+	return passed;
+}
+
+static bool
+set_up_wifi(void)
+{
+	bool passed = true;
+	int exit_code;
+	char *ifcfg_scan[] = {
+		"ifconfig", WLAN_NAME, "scan", NULL
+	};
+	char *ifcfg_ssid[] = {
+		"ifconfig", WLAN_NAME, "ssid", ssid, NULL
+	};
+	char *ifcfg_ip[] = {
+		"ifconfig", WLAN_NAME, net_ip, "netmask", net_mask, NULL
+	};
+	char *ifcfg[] = {
+		"ifconfig", WLAN_NAME, NULL
+	};
+
+	puts("----- set up wifi");
+
+	if (passed) {
+		exit_code = rtems_bsd_command_ifconfig(
+		    RTEMS_BSD_ARGC(ifcfg_scan), ifcfg_scan);
+		if(exit_code != EXIT_SUCCESS) {
+			printf("ERROR while scanning with wlan.");
+			passed = false;
+		}
+	}
+
+	if (passed) {
+		exit_code = rtems_bsd_command_ifconfig(
+		    RTEMS_BSD_ARGC(ifcfg_ssid), ifcfg_ssid);
+		if(exit_code != EXIT_SUCCESS) {
+			printf("ERROR while setting ssid of wlan.");
+			passed = false;
+		}
+	}
+
+	rtems_task_wake_after(RTEMS_MILLISECONDS_TO_TICKS(2000));
+
+	if (passed) {
+		exit_code = rtems_bsd_command_ifconfig(
+		    RTEMS_BSD_ARGC(ifcfg_ip), ifcfg_ip);
+		if(exit_code != EXIT_SUCCESS) {
+			printf("ERROR while setting ip on wlan.");
+			passed = false;
+		}
+	}
+
+	(void) rtems_bsd_command_ifconfig(RTEMS_BSD_ARGC(ifcfg), ifcfg);
+
+	if (passed) {
+		puts("***** set up wifi passed.");
+	} else {
+		puts("EEEEE set up wifi FAILED.");
+	}
+
+	return passed;
+}
+
+static bool
+test_ping(void)
+{
+	bool passed = true;
+	int exit_code;
+	char *ping[] = {
+		"ping", ping_ip, NULL
+	};
+	const int maxtries = 10;
+	const int delay = 1;
+	int tries = 0;
+
+	puts("----- do ping test");
+
+	do {
+		exit_code = rtems_bsd_command_ping(RTEMS_BSD_ARGC(ping), ping);
+		if(exit_code != EXIT_SUCCESS) {
+			printf("Ping failed.");
+			passed = false;
+		} else {
+			passed = true;
+		}
+		if (!passed && tries < maxtries) {
+			++tries;
+			rtems_task_wake_after(
+			    RTEMS_MILLISECONDS_TO_TICKS(delay * 1000));
+		}
+	} while (!passed && tries <= maxtries);
+
+	if (passed) {
+		puts("***** ping test passed.");
+	} else {
+		puts("EEEEE ping test FAILED.");
+	}
+
+	return passed;
+}
+
 static void
 Init(rtems_task_argument arg)
 {
@@ -558,10 +795,20 @@ Init(rtems_task_argument arg)
 	puts(" - PmodCMPS on I2C");
 	puts(" - Bridge between GPIO1 and GPIO2");
 	puts(" - Loopback on UART (TxD -> RxD, RTS -> CTS)");
+	puts("Prepare a WiFi access point with a configuration that matches the one in grisp.ini.");
 
 	grisp_led_set1(false, false, false);
 	grisp_led_set2(false, false, false);
 
+	if (passed) {
+		passed = prepare_libbsd();
+	}
+	if (passed) {
+		passed = evaluate_ini_file(ini_file);
+	}
+	if (passed) {
+		passed = set_up_wifi();
+	}
 	if (passed) {
 		passed = test_spi();
 	}
@@ -610,6 +857,9 @@ Init(rtems_task_argument arg)
 			passed = false;
 		}
 	}
+	if (passed) {
+		passed = test_ping();
+	}
 	prepare_i2c();
 	if (passed) {
 		passed = test_i2c_cmps();
@@ -634,21 +884,41 @@ Init(rtems_task_argument arg)
 }
 
 /*
+ * Configure LibBSD.
+ */
+#define RTEMS_BSD_CONFIG_BSP_CONFIG
+#define RTEMS_BSD_CONFIG_TERMIOS_KQUEUE_AND_POLL
+#define RTEMS_BSD_CONFIG_INIT
+
+#include <machine/rtems-bsd-config.h>
+
+/*
  * Configure RTEMS.
  */
 #define CONFIGURE_MICROSECONDS_PER_TICK 10000
 
 #define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
 #define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER
+#define CONFIGURE_APPLICATION_NEEDS_STUB_DRIVER
+#define CONFIGURE_APPLICATION_NEEDS_ZERO_DRIVER
+#define CONFIGURE_APPLICATION_NEEDS_LIBBLOCK
 
+#define CONFIGURE_FILESYSTEM_DOSFS
 #define CONFIGURE_LIBIO_MAXIMUM_FILE_DESCRIPTORS 32
 
 #define CONFIGURE_UNLIMITED_OBJECTS
 #define CONFIGURE_UNIFIED_WORK_AREAS
+#define CONFIGURE_MAXIMUM_USER_EXTENSIONS 1
 
-#define CONFIGURE_INIT_TASK_STACK_SIZE (32 * 1024)
+#define CONFIGURE_INIT_TASK_STACK_SIZE (64 * 1024)
+#define CONFIGURE_INIT_TASK_INITIAL_MODES RTEMS_DEFAULT_MODES
+#define CONFIGURE_INIT_TASK_ATTRIBUTES RTEMS_FLOATING_POINT
 
-#define CONFIGURE_STACK_CHECKER_ENABLED
+#define CONFIGURE_BDBUF_BUFFER_MAX_SIZE (32 * 1024)
+#define CONFIGURE_BDBUF_MAX_READ_AHEAD_BLOCKS 4
+#define CONFIGURE_BDBUF_CACHE_MEMORY_SIZE (1 * 1024 * 1024)
+#define CONFIGURE_BDBUF_READ_AHEAD_TASK_PRIORITY 97
+#define CONFIGURE_SWAPOUT_TASK_PRIORITY 97
 
 #define CONFIGURE_RTEMS_INIT_TASKS_TABLE
 #define CONFIGURE_INIT
@@ -659,10 +929,22 @@ Init(rtems_task_argument arg)
  * Configure Shell.
  */
 #include <rtems/netcmds-config.h>
+#include <bsp/irq-info.h>
 #define CONFIGURE_SHELL_COMMANDS_INIT
 #define CONFIGURE_SHELL_COMMANDS_ALL
-#define CONFIGURE_SHELL_NO_COMMAND_MKRFS
-#define CONFIGURE_SHELL_NO_COMMAND_FDISK
-#define CONFIGURE_SHELL_NO_COMMAND_DEBUGRFS
+#define CONFIGURE_SHELL_USER_COMMANDS \
+  &bsp_interrupt_shell_command, \
+  &rtems_shell_ARP_Command, \
+  &rtems_shell_PFCTL_Command, \
+  &rtems_shell_PING_Command, \
+  &rtems_shell_IFCONFIG_Command, \
+  &rtems_shell_ROUTE_Command, \
+  &rtems_shell_NETSTAT_Command, \
+  &rtems_shell_DHCPCD_Command, \
+  &rtems_shell_HOSTNAME_Command, \
+  &rtems_shell_SYSCTL_Command, \
+  &rtems_shell_VMSTAT_Command, \
+  &rtems_shell_WLANSTATS_Command, \
+  &rtems_shell_BLKSTATS_Command
 
 #include <rtems/shellconfig.h>
