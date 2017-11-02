@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 embedded brains GmbH.  All rights reserved.
+ * Copyright (c) 2016-2017 embedded brains GmbH.  All rights reserved.
  *
  *  embedded brains GmbH
  *  Dornierstr. 4
@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
+#include <string.h>
 
 #include <sys/ioctl.h>
 
@@ -51,17 +52,10 @@
 
 #include <grisp/led.h>
 #include <grisp/pin-config.h>
+#include <grisp/eeprom.h>
 
 #define N_ELE(arr) (sizeof(arr)/sizeof(arr[0]))
 
-/** Page size in bytes */
-#define EEPROM_PAGE_SIZE 16
-
-/** Amount of pages */
-#define EEPROM_PAGES 16
-
-#define EEPROM_SIZE (EEPROM_PAGE_SIZE * EEPROM_PAGES)
-#define EEPROM_ADDR 0x57
 #define PMOD_CMPS_ADDR 0x1e
 #define PMOD_CMPS_SIZE 13
 #define PMOD_CMPS_PAGE_SIZE 1
@@ -93,7 +87,6 @@ const uint32_t atsam_matrix_ccfg_sysio = GRISP_MATRIX_CCFG_SYSIO;
 
 static uint8_t test_rx_array[3];
 static uint8_t test_tx_array[3];
-static const char eeprom_path[] = "/dev/i2c-0.eeprom-0";
 static const char cmps_path[] = "/dev/i2c-0.compass-0";
 static const char uart_path[] = "/dev/ttyUSART0";
 
@@ -173,17 +166,6 @@ init_cmps(int *fd_in, int *fd_out)
 }
 
 static void
-read_write_i2c_eeprom(int fd_in, int fd_out, uint8_t *in, uint8_t *out, size_t len)
-{
-	ssize_t rb, wb;
-
-	wb = write(fd_out, &in[0], len);
-	assert(wb == (ssize_t)len);
-	rb = read(fd_in, &out[0], len);
-	assert(rb == (ssize_t)len);
-}
-
-static void
 read_write_pmod_cmps(int fd_in, uint8_t *out, size_t lenr)
 {
 	ssize_t rb;
@@ -257,61 +239,51 @@ static bool
 test_i2c_eeprom(void)
 {
 	int err = 0;
-	int fd_in, fd_out;
-	uint8_t in[] = {0xc0, 0x1d, 0xc0, 0xff, 0xee};
-	uint8_t out[] = {0xff, 0xff, 0xff, 0xff, 0xff};
 	int rv;
-	size_t i;
+	struct grisp_eeprom eeprom;
 
-	puts("----- Internal I2C test");
+	puts("----- EEPROM test");
 
-	rv = i2c_dev_register_eeprom(
-	    ATSAM_I2C_0_BUS_PATH,
-	    &eeprom_path[0],
-	    EEPROM_ADDR,
-	    1,
-	    EEPROM_PAGE_SIZE,
-	    EEPROM_SIZE,
-	    0
-	);
-	assert(rv == 0);
+	err = grisp_eeprom_init();
+	assert(err == 0);
 
-	fd_in = open(&eeprom_path[0], O_RDWR);
-	assert(fd_in != -1);
-	fd_out = open(&eeprom_path[0], O_RDWR);
-	assert(fd_out != -1);
-
-	read_write_i2c_eeprom(fd_in, fd_out, &in[0], &out[0], N_ELE(in));
-
-	printf("I2C eeprom write data: ");
-	for (i=0; i < N_ELE(in); i++) {
-		printf("%x ",in[i]);
-	}
-	puts("");
-	printf("I2C eeprom read data:  ");
-	for (i=0; i < N_ELE(in); i++) {
-		printf("%x ",out[i]);
-	}
-	puts("");
-	for (i=0; i < N_ELE(in); i++) {
-		if (in[i] != out[i]) {
+	if (err == 0) {
+		eeprom.sig_version = GRISP_EEPROM_SIG_VERSION;
+		/* Ask for values */
+		puts("Please enter the new EEPROM content in the following format:\n"
+		    "Format (integers): serial, batch_nr, prod_year, prod_month, prod_day, vers_major, vers_minor, ass_var, mac_addr(xx:yy:zz:aa:bb:cc)"
+		    );
+		rv = scanf("%lu, %hu, %hu, %hhu, %hhu, %hhu, %hhu, %hhu, %hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+		    &eeprom.serial, &eeprom.batch_nr, &eeprom.prod_year,
+		    &eeprom.prod_month, &eeprom.prod_day, &eeprom.vers_major,
+		    &eeprom.vers_minor, &eeprom.ass_var,
+		    &eeprom.mac_addr[0], &eeprom.mac_addr[1],
+		    &eeprom.mac_addr[2], &eeprom.mac_addr[3],
+		    &eeprom.mac_addr[4], &eeprom.mac_addr[5]);
+		if (rv != 14) {
+			printf("Reading failed (%s). Don't write EEPROM.\n",
+			    strerror(errno));
 			err = 1;
 		}
 	}
-	puts("");
 
-	rv = close(fd_in);
-	assert(rv == 0);
-	rv = close(fd_out);
-	assert(rv == 0);
-	rv = unlink(&eeprom_path[0]);
-	assert(rv == 0);
+	if (err == 0) {
+		puts("Write EEPROM.");
+		err = grisp_eeprom_set(&eeprom);
+	}
+
+	if (err == 0) {
+		puts("Verify EEPROM CRC.");
+		err = grisp_eeprom_set(&eeprom);
+		/* Dump only for the log */
+		grisp_eeprom_dump(&eeprom);
+	}
 
 	if (err != 0) {
-		puts("EEEEE Internal I2C test FAILED.");
+		puts("EEEEE EEPROM test FAILED.");
 	}
 	else {
-		puts("***** Internal I2C test passed.");
+		puts("***** EEPROM test passed.");
 		return true;
 	}
 
@@ -593,14 +565,6 @@ Init(rtems_task_argument arg)
 	if (passed) {
 		passed = test_spi();
 	}
-	prepare_i2c();
-	if (passed) {
-		passed = test_i2c_eeprom();
-	}
-	if (passed) {
-		passed = test_i2c_cmps();
-	}
-	destroy_i2c();
 	if (passed) {
 		passed = test_gpio();
 	}
@@ -646,6 +610,14 @@ Init(rtems_task_argument arg)
 			passed = false;
 		}
 	}
+	prepare_i2c();
+	if (passed) {
+		passed = test_i2c_cmps();
+	}
+	if (passed) {
+		passed = test_i2c_eeprom();
+	}
+	destroy_i2c();
 
 	if (passed) {
 		puts("**** Test successful ****");
