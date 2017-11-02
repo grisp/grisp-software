@@ -6,7 +6,7 @@ include $(RTEMS_ROOT)/make/custom/$(RTEMS_BSP).mk
 CFLAGS += -O0
 LDFLAGS += -qnolinkcmds -T linkcmds.sdram
 
-APP = $(BUILDDIR)/rtems-hw-sample
+APP = $(BUILDDIR)/rtems-hw-test
 APP_PIECES = $(wildcard *.c)
 APP_OBJS = $(APP_PIECES:%.c=$(BUILDDIR)/%.o)
 APP_DEPS = $(APP_PIECES:%.c=$(BUILDDIR)/%.d)
