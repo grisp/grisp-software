@@ -56,7 +56,11 @@
 #define STACK_SIZE_SHELL	(64 * 1024)
 
 #define PRIO_SHELL		150
-#define PRIO_LED_TASK		250
+#define PRIO_LED_TASK		(RTEMS_MAXIMUM_PRIORITY - 1)
+#define PRIO_DHCP		(RTEMS_MAXIMUM_PRIORITY - 1)
+#define PRIO_WPA		(RTEMS_MAXIMUM_PRIORITY - 1)
+
+const char *wpa_supplicant_conf = "/media/mmcsd-0-0/wpa_supplicant.conf";
 
 const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
@@ -72,41 +76,6 @@ struct rtems_ftpd_configuration rtems_ftpd_configuration = {
 	.idle = 5 * 60,
 	.access = 0
 };
-
-static void
-network_dhcpcd_task(rtems_task_argument arg)
-{
-	int exit_code;
-	char *dhcpcd[] = {
-		"dhcpcd",
-		NULL
-	};
-
-	(void)arg;
-
-	exit_code = rtems_bsd_command_dhcpcd(RTEMS_BSD_ARGC(dhcpcd), dhcpcd);
-	assert(exit_code == EXIT_SUCCESS);
-}
-
-static void
-start_network_dhcpcd(void)
-{
-	rtems_status_code sc;
-	rtems_id id;
-
-	sc = rtems_task_create(
-		rtems_build_name('D', 'H', 'C', 'P'),
-		RTEMS_MAXIMUM_PRIORITY - 1,
-		2 * RTEMS_MINIMUM_STACK_SIZE,
-		RTEMS_DEFAULT_MODES,
-		RTEMS_FLOATING_POINT,
-		&id
-	);
-	assert(sc == RTEMS_SUCCESSFUL);
-
-	sc = rtems_task_start(id, network_dhcpcd_task, 0);
-	assert(sc == RTEMS_SUCCESSFUL);
-}
 
 static void
 start_shell(void)
@@ -231,7 +200,8 @@ Init(rtems_task_argument arg)
 		grisp_led_set1(true, false, false);
 	}
 
-	start_network_dhcpcd();
+	grisp_init_dhcpcd(PRIO_DHCP);
+
 	grisp_led_set2(false, false, true);
 	if (PIO_Get(&mode1) != 0) {
 		printf("Mode 1 set: Create WLAN device.\n");
@@ -241,6 +211,8 @@ Init(rtems_task_argument arg)
 	} else {
 		printf("Mode 1 cleared: Skip creating WLAN device.\n");
 	}
+	grisp_init_wpa_supplicant(wpa_supplicant_conf, PRIO_WPA);
+
 	init_led();
 	start_shell();
 
@@ -312,7 +284,9 @@ Init(rtems_task_argument arg)
   &rtems_shell_VMSTAT_Command, \
   &rtems_shell_WLANSTATS_Command, \
   &rtems_shell_STARTFTP_Command, \
-  &rtems_shell_BLKSTATS_Command
+  &rtems_shell_BLKSTATS_Command, \
+  &rtems_shell_WPA_SUPPLICANT_Command, \
+  &rtems_shell_WPA_SUPPLICANT_FORK_Command
 
 #define CONFIGURE_SHELL_COMMANDS_ALL
 

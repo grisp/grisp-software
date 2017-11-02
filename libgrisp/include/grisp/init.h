@@ -45,6 +45,9 @@ rtems_status_code grisp_init_wait_for_sd(void);
 void	grisp_saf1761_basic_init(void);
 void	grisp_wlan_power_up(void);
 void	grisp_wlan_power_down(void);
+void	grisp_init_wpa_supplicant(const char *conf_file,
+	    rtems_task_priority prio);
+void	grisp_init_dhcpcd(rtems_task_priority prio);
 
 #ifdef __cplusplus
 }
