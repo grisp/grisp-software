@@ -575,6 +575,8 @@ static void
 Init(rtems_task_argument arg)
 {
 	bool passed = true;
+	char choice;
+	int  err;
 
 	(void)arg;
 	puts("");
@@ -606,13 +608,47 @@ Init(rtems_task_argument arg)
 		passed = test_uart();
 	}
 	if (passed) {
-		puts("\nLED test");
-		grisp_led_set1(true, true, true);
-		grisp_led_set2(true, true, true);
+		int c;
+		puts("\nLED test red");
+		grisp_led_set1(true, false, false);
+		grisp_led_set2(true, false, false);
+		puts("Only red LEDS on? y/n");
+		err = scanf("%c", &choice);
+		assert(err == 1);
+		while ((c = getchar()) != '\n' && c != EOF); /* Flush stdin. */
+		if (choice != 'y') {
+			passed = false;
+		}
+	}
+	if (passed) {
+		int c;
+		puts("\nLED test green");
+		grisp_led_set1(false, true, false);
+		grisp_led_set2(false, true, false);
+		puts("Only green LEDS on? y/n");
+		err = scanf("%c", &choice);
+		assert(err == 1);
+		while ((c = getchar()) != '\n' && c != EOF); /* Flush stdin. */
+		if (choice != 'y') {
+			passed = false;
+		}
+	}
+	if (passed) {
+		int c;
+		puts("\nLED test blue");
+		grisp_led_set1(false, false, true);
+		grisp_led_set2(false, false, true);
+		puts("Only blue LEDS on? y/n");
+		err = scanf("%c", &choice);
+		assert(err == 1);
+		while ((c = getchar()) != '\n' && c != EOF); /* Flush stdin. */
+		if (choice != 'y') {
+			passed = false;
+		}
 	}
 
 	if (passed) {
-		puts("**** Test successful if all leds on****");
+		puts("**** Test successful ****");
 	}
 	else {
 		puts("**** Test FAILED ****");
