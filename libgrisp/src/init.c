@@ -33,6 +33,9 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sysexits.h>
+
+#include <machine/rtems-bsd-commands.h>
 
 #include <rtems.h>
 #include <rtems/bsd/bsd.h>
@@ -144,6 +147,37 @@ grisp_init_sd_card(void)
 	assert(sc == RTEMS_SUCCESSFUL);
 }
 
+static void
+grisp_init_network_ifconfig_lo0(void)
+{
+	int exit_code;
+	char *lo0[] = {
+		"ifconfig",
+		"lo0",
+		"inet",
+		"127.0.0.1",
+		"netmask",
+		"255.255.255.0",
+		NULL
+	};
+	char *lo0_inet6[] = {
+		"ifconfig",
+		"lo0",
+		"inet6",
+		"::1",
+		"prefixlen",
+		"128",
+		"alias",
+		NULL
+	};
+
+	exit_code = rtems_bsd_command_ifconfig(RTEMS_BSD_ARGC(lo0), lo0);
+	assert(exit_code == EX_OK);
+
+	exit_code = rtems_bsd_command_ifconfig(RTEMS_BSD_ARGC(lo0_inet6), lo0_inet6);
+	assert(exit_code == EX_OK);
+}
+
 void
 grisp_init_libbsd(void)
 {
@@ -154,6 +188,7 @@ grisp_init_libbsd(void)
 	sc = rtems_bsd_initialize();
 	assert(sc == RTEMS_SUCCESSFUL);
 
+	grisp_init_network_ifconfig_lo0();
 	grisp_wlan_power_up();
 
 	/* Let the callout timer allocate its resources */
