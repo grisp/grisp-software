@@ -1,0 +1,5 @@
+network={
+    ssid="grisptest"
+    key_mgmt=WPA-PSK
+    psk="testtest"
+}
