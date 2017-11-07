@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sysexits.h>
+#include <string.h>
 
 #include <machine/rtems-bsd-commands.h>
 
