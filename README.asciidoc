@@ -138,3 +138,16 @@ the process. You can then start a gdb that connects to the server using
 `./build/debug-start-gdb.sh path/to/app.exe`. The script adds a `reset` command
 to the normal gdb that restarts the target and reloads the application. Note
 that for bigger applications, that might need quite some time.
+
+== WiFi
+
+By default, the wpa_supplicant.conf from the root of the SD card will be used.
+For a default WPA2 encrypted network, the file should look like follows:
+
+----
+network={
+    ssid="mynetwork"
+    key_mgmt=WPA-PSK
+    psk="secret"
+}
+----
