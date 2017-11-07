@@ -401,9 +401,9 @@ Init(rtems_task_argument arg)
 /*
  * Configure LibBSD.
  */
-#define RTEMS_BSD_CONFIG_BSP_CONFIG
-#define RTEMS_BSD_CONFIG_INIT
 #define GRISP_IS_BOOTLOADER
+#include <grisp/libbsd-nexus-config.h>
+#define RTEMS_BSD_CONFIG_INIT
 
 #include <machine/rtems-bsd-config.h>
 
