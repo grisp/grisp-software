@@ -792,10 +792,10 @@ test_ping(void)
 			passed = true;
 		}
 		if (!passed && tries < maxtries) {
-			++tries;
 			rtems_task_wake_after(
 			    RTEMS_MILLISECONDS_TO_TICKS(delay * 1000));
 		}
+		++tries;
 	} while (!passed && tries <= maxtries);
 
 	if (passed) {
