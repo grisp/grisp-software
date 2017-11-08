@@ -9,6 +9,7 @@ GRISP
 - the +xz+ decompression tool needs to be installed and because of a bug in the
   buildsystem its expected in +/usr/local/bin/xz+
 - the +zlib+ development files are necessary
+- +bison+, +flex+ and +texinfo+
 - to check for some of RTEMS source builders prerequisites (but read Issue #7 before)
     
     cd rtems-source-builder
@@ -63,7 +64,7 @@ To do that delete the
 
    ./build/build.sh --no-toolchain --no-bootstrap
 
-=== Updating the submodules from githib
+=== Updating the submodules from github
 
 When you want to rebuild with some new version from the Git repos you need to make
 sure that you update the sumodules:
