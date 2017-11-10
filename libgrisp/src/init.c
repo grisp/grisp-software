@@ -178,74 +178,10 @@ grisp_init_network_ifconfig_lo0(void)
 	assert(exit_code == EX_OK);
 }
 
-static char *wpa_supplicant_cmd[] = {
-	"wpa_supplicant",
-	"-Dbsd",
-	"-iwlan0",
-	"-c",
-	NULL, /* Will be replaced with path to config. */
-	NULL
-};
-
-static void
-wpa_supplicant_watcher_task(rtems_task_argument arg)
-{
-	int argc;
-	char ** argv;
-	int err;
-	(void) arg;
-
-	argv = wpa_supplicant_cmd;
-	argc = sizeof(wpa_supplicant_cmd)/sizeof(wpa_supplicant_cmd[0])-1;
-
-	while (true) {
-		rtems_task_wake_after(RTEMS_MILLISECONDS_TO_TICKS(2000));
-		err = rtems_bsd_command_wpa_supplicant(argc, argv);
-		printf("wpa_supplicant returned with %d\n", err);
-	}
-}
-
 int file_exists(const char *filename) {
     struct stat st;
     int result = stat(filename, &st);
     return result == 0;
-}
-
-/*
- * FIXME: This currently starts an ugly hack (wpa_supplicant_watcher) that just
- * restarts the wpa_supplicant if it doesn't run anymore. It should be replaced
- * by a proper event handling.
- */
-void
-grisp_init_wpa_supplicant(const char *conf_file, rtems_task_priority prio)
-{
-	char *conf;
-	size_t pos;
-	rtems_status_code sc;
-	rtems_id id;
-
-	if (!file_exists(conf_file)) {
-		printf("ERROR: wpa configuration does not exist: %s\n",
-		    conf_file);
-		return;
-	}
-
-	pos = sizeof(wpa_supplicant_cmd)/sizeof(wpa_supplicant_cmd[0]) - 2;
-	conf = strdup(conf_file);
-	wpa_supplicant_cmd[pos] = conf;
-
-	sc = rtems_task_create(
-		rtems_build_name('W', 'P', 'A', 'W'),
-		prio,
-		32 * 1024,
-		RTEMS_DEFAULT_MODES,
-		RTEMS_FLOATING_POINT,
-		&id
-	);
-	assert(sc == RTEMS_SUCCESSFUL);
-
-	sc = rtems_task_start(id, wpa_supplicant_watcher_task, 0);
-	assert(sc == RTEMS_SUCCESSFUL);
 }
 
 static void

@@ -76,6 +76,8 @@ static char image_path[PATH_MAX + 1] = "/media/mmcsd-0-0/grisp.bin";
 
 static rtems_id led_timer_id = RTEMS_INVALID_ID;
 
+#include "slim-down.h"
+
 static int
 ini_value_copy(void *dst, size_t dst_size, const char *value)
 {

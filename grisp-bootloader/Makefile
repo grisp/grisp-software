@@ -5,7 +5,7 @@ include $(RTEMS_ROOT)/make/custom/$(RTEMS_BSP).mk
 
 GRISP_BL_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 GRISP_BL_BUILD_DATE := $(shell LC_LOCALE=en_US date -u)
-#CFLAGS += -O0
+CFLAGS += -O2
 CFLAGS += -DGRISP_BL_VERSION="\"$(GRISP_BL_VERSION)\""
 CFLAGS += -DGRISP_BL_BUILD_DATE="\"$(GRISP_BL_BUILD_DATE)\""
 LDFLAGS += -qnolinkcmds -T linkcmds.bootloader
@@ -22,7 +22,7 @@ $(BUILDDIR):
 	mkdir $(BUILDDIR)
 
 $(APP).exe: $(APP_OBJS)
-	$(CCLINK) $^ -lgrisp -linih -lbsd -o $@
+	$(CCLINK) $^ -lgrisp -linih -lbsd -lm -o $@
 
 clean:
 	rm -rf $(BUILDDIR)
