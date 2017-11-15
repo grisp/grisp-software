@@ -6,7 +6,7 @@
 	url = https://github.com/grisp/rtems-libbsd
 [submodule "rtems-source-builder"]
 	path = rtems-source-builder
-	url = git://git.rtems.org/rtems-source-builder.git
+	url = https://github.com/grisp/rtems-source-builder
 [submodule "libinih/inih"]
 	path = libinih/inih
 	url = https://github.com/grisp/inih
