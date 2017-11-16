@@ -18,7 +18,7 @@ SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
 # Configuration
-source "${SCRIPTDIR}/configuration.sh"
+. "${SCRIPTDIR}/configuration.sh"
 ADDPATH=`readlink -f "${PREFIX}/bin"`
 export PATH="${ADDPATH}:${PATH}"
 

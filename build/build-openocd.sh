@@ -10,7 +10,7 @@ SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
 # configuration
-source "${SCRIPTDIR}/configuration.sh"
+. "${SCRIPTDIR}/configuration.sh"
 
 # Build openocd
 cd ${SCRIPTDIR}

@@ -10,7 +10,7 @@ SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
 # Configuration
-source "${SCRIPTDIR}/configuration.sh"
+. "${SCRIPTDIR}/configuration.sh"
 BUILD_DIR="${PROJECTDIR}/build/b-$BSP_NAME"
 export PATH="${PREFIX}/bin:${PATH}"
 
@@ -41,7 +41,7 @@ cd "${BUILD_DIR}"
 	"--prefix=${PREFIX}" \
 	"--enable-rtemsbsp=${BSP_NAME}" \
 	"--enable-maintainer-mode" \
-	"${BSP_CONFIG_OPT[@]}"
+	${BSP_CONFIG_OPT}
 
 # Make
 make ${make_targets}

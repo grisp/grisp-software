@@ -10,7 +10,7 @@ SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
 # configuration
-source "${SCRIPTDIR}/configuration.sh"
+. "${SCRIPTDIR}/configuration.sh"
 LOGDIR="${PROJECTDIR}/build/"
 NOW="$(date +%Y%m%d_%H%M%S)"
 export PATH="${PREFIX}/bin:${PATH}"

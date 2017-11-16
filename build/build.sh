@@ -9,7 +9,7 @@ set -e -u
 SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
-source "${SCRIPTDIR}/configuration.sh"
+. "${SCRIPTDIR}/configuration.sh"
 BUILD_DIR="${PROJECTDIR}/build/b-$BSP_NAME"
 export PATH="${PREFIX}/bin:${PATH}"
 

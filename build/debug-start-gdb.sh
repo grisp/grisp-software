@@ -10,7 +10,7 @@ SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
 # Configuration
-source "${SCRIPTDIR}/configuration.sh"
+. "${SCRIPTDIR}/configuration.sh"
 BUILD_DIR="${PROJECTDIR}/build/b-$BSP_NAME"
 export PATH="${PREFIX}/bin:${PATH}"
 

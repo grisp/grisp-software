@@ -10,7 +10,7 @@ SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
 # Configuration
-source "${SCRIPTDIR}/configuration.sh"
+. "${SCRIPTDIR}/configuration.sh"
 export PATH="${PREFIX}/bin:${PATH}"
 
 cd "${LIBGRISP_SOURCE_DIR}"
