@@ -10,8 +10,10 @@ GRISP
   buildsystem its expected in +/usr/local/bin/xz+
 - the +zlib+ development files are necessary
 - +bison+, +flex+ and +texinfo+
-- to check for some of RTEMS source builders prerequisites (but read Issue #7 before)
-    
+- to check for some of RTEMS source builders prerequisites
+
+    git submodule init
+    git submodule update rtems-source-builder
     cd rtems-source-builder
     ./source-builder/sb-check
 
