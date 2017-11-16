@@ -66,7 +66,7 @@ wpa_supplicant_watcher_task(rtems_task_argument arg)
 	}
 }
 
-int file_exists(const char *filename) {
+static int file_exists(const char *filename) {
     struct stat st;
     int result = stat(filename, &st);
     return result == 0;

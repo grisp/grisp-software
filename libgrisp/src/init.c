@@ -178,12 +178,6 @@ grisp_init_network_ifconfig_lo0(void)
 	assert(exit_code == EX_OK);
 }
 
-int file_exists(const char *filename) {
-    struct stat st;
-    int result = stat(filename, &st);
-    return result == 0;
-}
-
 static void
 network_dhcpcd_task(rtems_task_argument arg)
 {
