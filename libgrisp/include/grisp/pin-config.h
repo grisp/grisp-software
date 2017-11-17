@@ -55,6 +55,13 @@ extern "C" {
 #define GRISP_MODE_5	{PIO_PC10, PIOC, ID_PIOC, PIO_INPUT,    PIO_PULLUP}
 
 #define GRISP_PIN_CONFIG                                                      \
+  /* Init everything but Console, SDRAM and Trace port to input pull up */    \
+  {0xFFE27FFE, PIOA, ID_PIOA, PIO_INPUT, PIO_PULLUP},                         \
+  {0xFFFFFFFF, PIOB, ID_PIOB, PIO_INPUT, PIO_PULLUP},                         \
+  {0x00037F00, PIOC, ID_PIOC, PIO_INPUT, PIO_PULLUP},                         \
+  {0xD97C1E0F, PIOD, ID_PIOD, PIO_INPUT, PIO_PULLUP},                         \
+  {0xFFFFFFC0, PIOE, ID_PIOE, PIO_INPUT, PIO_PULLUP},                         \
+                                                                              \
   /* Console */                                                               \
   {PIO_PD25C_URXD2 | PIO_PD26C_UTXD2,                                         \
       PIOD, ID_PIOD, PIO_PERIPH_C, PIO_DEFAULT},                              \
