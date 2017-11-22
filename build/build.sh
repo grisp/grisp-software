@@ -62,3 +62,9 @@ cd "${PROJECTDIR}"
 "${SCRIPTDIR}/build-libbsd.sh" clean install
 "${SCRIPTDIR}/build-libinih.sh"
 "${SCRIPTDIR}/build-libgrisp.sh"
+
+echo "$(git rev-parse HEAD)" > "${PREFIX}/buildrev"
+echo "#define GRISP_TOOLCHAIN_REVISION \"$(git rev-parse HEAD)\"" > \
+	"${PREFIX}/${TARGET}/${BSP_NAME}/lib/include/grisp/grisp-buildinfo.h"
+echo "-define(GRISP_TOOLCHAIN_REVISION, \"$(git rev-parse HEAD)\")." > \
+	"${PREFIX}/grisp_buildinfo.hrl"
