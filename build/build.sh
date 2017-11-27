@@ -40,6 +40,7 @@ then
 	# init git submodules
 	cd "${PROJECTDIR}"
 	git submodule init
+	git submodule sync
 	git submodule update
 	cd "${LIBBSD_SOURCE_DIR}"
 	git submodule init
