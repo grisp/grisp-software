@@ -31,3 +31,8 @@ cd "${PROJECTDIR}/rtems-source-builder/rtems"
 	--no-clean \
 	--without-rtems \
 	"${RTEMS_VERSION}/rtems-${RTEMS_CPU}"
+
+# install waf
+mkdir -p "${PREFIX}/bin/"
+cp "${PROJECTDIR}/build/src/waf-2.0.2" "${PREFIX}/bin/waf"
+chmod 755 "${PREFIX}/bin/waf"
