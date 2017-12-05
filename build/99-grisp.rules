@@ -1,5 +1,5 @@
 # create symlink for serial port
-ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{product}=="Grisp", ATTRS{bInterfaceNumber}=="01", SUBSYSTEM=="tty", SYMLINK+="ttyGRiSP"
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{product}=="Grisp", ENV{ID_USB_INTERFACE_NUM}=="01", SUBSYSTEM=="tty", SYMLINK+="ttyGRiSP"
 
 # allow access for everyone (necessary to use openocd)
 ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{product}=="Grisp", MODE="666"
