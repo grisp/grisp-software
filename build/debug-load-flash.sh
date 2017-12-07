@@ -6,7 +6,8 @@ set -x
 set -e -u
 
 # find out own directory
-SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SCRIPTPATH=$(readlink -- "$0" || echo "$0")
+SCRIPTDIR=$(CDPATH= cd -- "$(dirname -- "$SCRIPTPATH")" && pwd)
 PROJECTDIR="${SCRIPTDIR}/../"
 
 ELFFILE=$1
