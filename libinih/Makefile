@@ -7,6 +7,11 @@ include $(RTEMS_ROOT)/make/custom/$(RTEMS_BSP).mk
 # Therefore make an exception for this error.
 CFLAGS += -Wno-error=cast-qual
 
+# to support long lines:
+CFLAGS += -DINI_USE_STACK=0
+CFLAGS += -DINI_ALLOW_REALLOC=1
+CFLAGS += -DINI_MAX_LINE=1024*32
+
 LIB = $(BUILDDIR)/libinih.a
 LIB_PIECES = $(wildcard inih/*.c)
 LIB_OBJS = $(LIB_PIECES:%.c=$(BUILDDIR)/%.o)
