@@ -53,6 +53,42 @@ All installations are made inside the +rtems-install+ subdirectory in the base
 directory of the repository. To change the install location edit the +PREFIX+ in
 +build/configuration.sh+.
 
+== git Repository Structure
+
+The +grisp-software+ project pulls in a number of git submodules (like RTEMS).
+Most of these submodules have been forked with no or only minimal changes. The
+branches in the submodules follow the following guidelines:
+
+- +master+ tracks the upstream development of the project.
+- If patches are necessary, they will be added on branches and the commits on
+  the branch are referenced in +grisp-software+.
+
+Here is an example for how a git tree of a submodule could look like:
+
+----
+ o---o---o---B'--o---o---o---o---o---o  master (clone of upstream/master)
+      \               \
+       \               A'--C'  grisp-20171110-xyz
+        \
+         A---B---C  grisp-20171020-xyz
+----
+
+In that example +grisp-20171020-xyz+ is a version of the software with some
+adaptions for GRiSP. If for example a (maybe slightly modified) version of the
+patch +B+ has been accepted in the upstream repository and GRiSP now wants to
+update to a newer version of the master, +B+ is no longer necessary. Therefore
+the new +grisp-20171110-xyx+ no longer contains +B+ but (adapted) versions of
++A+ and +C+ are still necessary.
+
+The old +grisp-20171020-xyz+ is still be kept so that a old version of the
++grisp-software+ repository can still access the commits.
+
+That structure makes it relatively easy to see the exact differences to the
+upstream version and which patches might should be integrated into it in the
+future. The disadvantage is that it will leave quite a number of old branches
+that are still necessary so that older +grisp-software+ revisions can reference
+them.
+
 === Re-Building only target specific RTEMS libs
 
 Since building the toolchain takes a lot of time and since the toolchain
