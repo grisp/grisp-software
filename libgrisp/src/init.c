@@ -34,6 +34,8 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sysexits.h>
+#include <unistd.h>
+#include <string.h>
 
 #include <machine/rtems-bsd-commands.h>
 
@@ -182,20 +184,24 @@ static void
 network_dhcpcd_task(rtems_task_argument arg)
 {
 	int exit_code;
-	char *dhcpcd[] = {
-		"dhcpcd",
-		NULL
-	};
-	(void) arg;
+	const char *cconf = (const char*) arg;
+	char* conf = NULL;
+	if (cconf && (access(cconf, F_OK | R_OK ) != -1) && (conf = strdup(cconf))) {
+		char *dhcpcd[] = {"dhcpcd", "-f", conf, NULL};
+		exit_code = rtems_bsd_command_dhcpcd(RTEMS_BSD_ARGC(dhcpcd), dhcpcd);
+		free(conf);
+	} else {
+		char *dhcpcd[] = {"dhcpcd", NULL};
+		exit_code = rtems_bsd_command_dhcpcd(RTEMS_BSD_ARGC(dhcpcd), dhcpcd);
+	}
 
-	exit_code = rtems_bsd_command_dhcpcd(RTEMS_BSD_ARGC(dhcpcd), dhcpcd);
 	assert(exit_code == EXIT_SUCCESS);
 
 	rtems_task_delete(RTEMS_SELF);
 }
 
 void
-grisp_init_dhcpcd(rtems_task_priority prio)
+grisp_init_dhcpcd_with_config(rtems_task_priority prio, const char *conf)
 {
 	rtems_status_code sc;
 	rtems_id id;
@@ -210,8 +216,14 @@ grisp_init_dhcpcd(rtems_task_priority prio)
 	);
 	assert(sc == RTEMS_SUCCESSFUL);
 
-	sc = rtems_task_start(id, network_dhcpcd_task, 0);
+	sc = rtems_task_start(id, network_dhcpcd_task, (rtems_task_argument) conf);
 	assert(sc == RTEMS_SUCCESSFUL);
+}
+
+void
+grisp_init_dhcpcd(rtems_task_priority prio)
+{
+	grisp_init_dhcpcd_with_config(prio, NULL);
 }
 
 void

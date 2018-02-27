@@ -48,6 +48,7 @@ void	grisp_wlan_power_down(void);
 void	grisp_init_wpa_supplicant(const char *conf_file,
 	    rtems_task_priority prio);
 void	grisp_init_dhcpcd(rtems_task_priority prio);
+void	grisp_init_dhcpcd_with_config(rtems_task_priority prio, const char *conf);
 
 #ifdef __cplusplus
 }
