@@ -14,4 +14,4 @@ source "${SCRIPTDIR}/configuration.sh"
 BUILD_DIR="${PROJECTDIR}/build/b-$BSP_NAME"
 export PATH="${PREFIX}/bin:${PATH}"
 
-arm-rtems4.12-gdb -x ${SCRIPTDIR}/src/start.gdb "$@"
+arm-rtems5-gdb -x ${SCRIPTDIR}/src/start.gdb "$@"
