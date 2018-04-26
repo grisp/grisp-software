@@ -48,10 +48,7 @@ done
 # Build and install libbsd
 if [ $DO_CLEAN -ne 0 ]
 then
-	if [ -e build ]
-	then
-		waf clean
-	fi
+	rm -rf build
 fi
 
 waf configure \
