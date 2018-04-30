@@ -782,7 +782,7 @@ test_ping(void)
 		"ping", ping_ip, NULL
 	};
 	const int maxtries = 10;
-	const int delay = 1;
+	const rtems_interval delay = RTEMS_MILLISECONDS_TO_TICKS(1000);
 	int tries = 0;
 
 	puts("----- do ping test");
@@ -796,8 +796,7 @@ test_ping(void)
 			passed = true;
 		}
 		if (!passed && tries < maxtries) {
-			rtems_task_wake_after(
-			    RTEMS_MILLISECONDS_TO_TICKS(delay * 1000));
+			rtems_task_wake_after(delay);
 		}
 		++tries;
 	} while (!passed && tries <= maxtries);
