@@ -29,10 +29,12 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/stat.h>
+#include <sys/syslimits.h>
 #include <assert.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <sys/stat.h>
+#include <string.h>
 
 #include <rtems.h>
 #include <rtems/bsd/bsd.h>
