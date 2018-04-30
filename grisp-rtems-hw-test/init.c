@@ -213,6 +213,11 @@ evaluate_ini_file(const char *filename)
 	return (rv == 0);
 }
 
+static const atsam_spi_config spi_config = {
+  .spi_peripheral_id = ID_SPI0,
+  .spi_regs = SPI0
+};
+
 static int
 init_spi(void)
 {
@@ -221,8 +226,7 @@ init_spi(void)
 	uint32_t speed = 100000;
 
 	/* bus registration */
-	rv = spi_bus_register_atsam(
-	    ATSAM_SPI_0_BUS_PATH, ID_SPI0, SPI0, NULL, 0);
+	rv = spi_bus_register_atsam(ATSAM_SPI_0_BUS_PATH, &spi_config);
 	assert(rv == 0);
 
 	fd = open(ATSAM_SPI_0_BUS_PATH, O_RDWR);
