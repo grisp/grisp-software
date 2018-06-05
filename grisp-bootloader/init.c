@@ -29,10 +29,12 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/stat.h>
+#include <sys/syslimits.h>
 #include <assert.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <sys/stat.h>
+#include <string.h>
 
 #include <rtems.h>
 #include <rtems/bsd/bsd.h>
@@ -401,16 +403,16 @@ Init(rtems_task_argument arg)
 /*
  * Configure LibBSD.
  */
-#define RTEMS_BSD_CONFIG_BSP_CONFIG
-#define RTEMS_BSD_CONFIG_INIT
 #define GRISP_IS_BOOTLOADER
+#include <grisp/libbsd-nexus-config.h>
+#define RTEMS_BSD_CONFIG_INIT
 
 #include <machine/rtems-bsd-config.h>
 
 /*
  * Configure RTEMS.
  */
-#define CONFIGURE_MICROSECONDS_PER_TICK 1000
+#define CONFIGURE_MICROSECONDS_PER_TICK 10000
 
 #define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
 #define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER

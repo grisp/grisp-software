@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 embedded brains GmbH.  All rights reserved.
+ * Copyright (c) 2018 embedded brains GmbH.  All rights reserved.
  *
  *  embedded brains GmbH
  *  Dornierstr. 4
@@ -29,107 +29,68 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/stat.h>
 #include <assert.h>
+#include <fcntl.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <rtems.h>
+#include <rtems/bdbuf.h>
 #include <rtems/console.h>
-#include <rtems/malloc.h>
+#include <rtems/media.h>
 #include <rtems/shell.h>
+#include <rtems/bsd/bsd.h>
 
 #include <bsp.h>
 
-#include <grisp/led.h>
 #include <grisp/pin-config.h>
+#include <grisp/init.h>
 
-#define STACK_SIZE_INIT_TASK	(32 * 1024)
-#define STACK_SIZE_SHELL	(32 * 1024)
-#define PRIO_SHELL		10
+#include "fatbench.h"
+
+#define STACK_SIZE_INIT_TASK	(64 * 1024)
+#define STACK_SIZE_SHELL	(64 * 1024)
+
+#define PRIO_SHELL		150
+#define PRIO_LED_TASK		(RTEMS_MAXIMUM_PRIORITY - 1)
+#define PRIO_DHCP		(RTEMS_MAXIMUM_PRIORITY - 1)
 
 const Pin atsam_pin_config[] = {GRISP_PIN_CONFIG};
 const size_t atsam_pin_config_count = PIO_LISTSIZE(atsam_pin_config);
 const uint32_t atsam_matrix_ccfg_sysio = GRISP_MATRIX_CCFG_SYSIO;
 
-static rtems_id led_timer_id = RTEMS_INVALID_ID;
-
-static void
-led_timer(rtems_id timer, void *arg)
-{
-	rtems_status_code sc;
-	static uint8_t state = 0x1;
-	bool r, g, b;
-
-	(void)arg;
-
-	sc = rtems_timer_reset(timer);
-	assert(sc == RTEMS_SUCCESSFUL);
-
-	++state;
-	if (state > 0x7) {
-		state = 0x0;
-	}
-
-	r = ((state & 0x1) != 0);
-	g = ((state & 0x2) != 0);
-	b = ((state & 0x4) != 0);
-
-	grisp_led_set2(r, g, b);
-}
-
-static void
-init_led(void)
-{
-	rtems_status_code sc;
-
-	grisp_led_set1(false, false, false);
-	grisp_led_set2(false, false, false);
-
-	sc = rtems_timer_initiate_server(
-		250,
-		RTEMS_MINIMUM_STACK_SIZE,
-		RTEMS_DEFAULT_ATTRIBUTES
-	);
-	assert(sc == RTEMS_SUCCESSFUL);
-
-	sc = rtems_timer_create(rtems_build_name('L', 'E', 'D', ' '),
-	    &led_timer_id);
-	assert(sc == RTEMS_SUCCESSFUL);
-
-	sc = rtems_timer_server_fire_after(
-		led_timer_id,
-		rtems_clock_get_ticks_per_second() / 2,
-		led_timer,
-		NULL
-	);
-	assert(sc == RTEMS_SUCCESSFUL);
-}
-
-static void
-start_shell(void)
-{
-	rtems_status_code sc = rtems_shell_init(
-		"SHLL",
-		STACK_SIZE_SHELL,
-		PRIO_SHELL,
-		CONSOLE_DEVICE_NAME,
-		false,
-		true,
-		NULL
-	);
-	assert(sc == RTEMS_SUCCESSFUL);
-}
-
 static void
 Init(rtems_task_argument arg)
 {
+	rtems_status_code sc;
+
 	(void)arg;
 
-	puts("\nSimple RTEMS sample application\n");
-	init_led();
-	start_shell();
+	grisp_init_sd_card();
 
-	exit(0);
+	sc = rtems_bsd_initialize();
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	sleep(2);
+
+	sc = rtems_shell_init("SHLL", STACK_SIZE_SHELL,
+	    PRIO_SHELL, CONSOLE_DEVICE_NAME, false, false, NULL);
+	assert(sc == RTEMS_SUCCESSFUL);
+
+	fatbench("/dev/mmcsd-0-1", "/media/mmcsd-0-1");
+
+	rtems_task_delete(RTEMS_SELF);
 }
+
+/*
+ * Configure LibBSD.
+ */
+#include <grisp/libbsd-nexus-config.h>
+#define RTEMS_BSD_CONFIG_TERMIOS_KQUEUE_AND_POLL
+#define RTEMS_BSD_CONFIG_INIT
+
+#include <machine/rtems-bsd-config.h>
 
 /*
  * Configure RTEMS.
@@ -138,15 +99,27 @@ Init(rtems_task_argument arg)
 
 #define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
 #define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER
+#define CONFIGURE_APPLICATION_NEEDS_STUB_DRIVER
+#define CONFIGURE_APPLICATION_NEEDS_ZERO_DRIVER
+#define CONFIGURE_APPLICATION_NEEDS_LIBBLOCK
 
-#define CONFIGURE_LIBIO_MAXIMUM_FILE_DESCRIPTORS 8
+#define CONFIGURE_FILESYSTEM_DOSFS
+#define CONFIGURE_LIBIO_MAXIMUM_FILE_DESCRIPTORS 32
 
 #define CONFIGURE_UNLIMITED_OBJECTS
 #define CONFIGURE_UNIFIED_WORK_AREAS
+#define CONFIGURE_MAXIMUM_USER_EXTENSIONS 1
 
 #define CONFIGURE_INIT_TASK_STACK_SIZE STACK_SIZE_INIT_TASK
+#define CONFIGURE_INIT_TASK_INITIAL_MODES RTEMS_DEFAULT_MODES
+#define CONFIGURE_INIT_TASK_ATTRIBUTES RTEMS_FLOATING_POINT
+#define CONFIGURE_INIT_TASK_PRIORITY 112
 
-#define CONFIGURE_STACK_CHECKER_ENABLED
+#define CONFIGURE_BDBUF_BUFFER_MAX_SIZE (32 * 1024)
+#define CONFIGURE_BDBUF_MAX_READ_AHEAD_BLOCKS 4
+#define CONFIGURE_BDBUF_CACHE_MEMORY_SIZE (1 * 1024 * 1024)
+#define CONFIGURE_BDBUF_READ_AHEAD_TASK_PRIORITY 97
+#define CONFIGURE_SWAPOUT_TASK_PRIORITY 97
 
 #define CONFIGURE_RTEMS_INIT_TASKS_TABLE
 #define CONFIGURE_INIT
@@ -157,10 +130,12 @@ Init(rtems_task_argument arg)
  * Configure Shell.
  */
 #include <rtems/netcmds-config.h>
+#include <bsp/irq-info.h>
 #define CONFIGURE_SHELL_COMMANDS_INIT
+
+#define CONFIGURE_SHELL_USER_COMMANDS \
+    &bsp_interrupt_shell_command
+
 #define CONFIGURE_SHELL_COMMANDS_ALL
-#define CONFIGURE_SHELL_NO_COMMAND_MKRFS
-#define CONFIGURE_SHELL_NO_COMMAND_FDISK
-#define CONFIGURE_SHELL_NO_COMMAND_DEBUGRFS
 
 #include <rtems/shellconfig.h>

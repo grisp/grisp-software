@@ -1,0 +1,237 @@
+format with 1 sectors per cluster
+write 33554432 in 91.46s (358.27KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 512
+ READ HITS            | 68598
+ READ MISSES          | 527
+ READ AHEAD TRANSFERS | 260
+ READ BLOCKS          | 1567
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 4056
+ WRITE BLOCKS         | 64666
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+read 33554432 in 40.18s (815.57KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 512
+ READ HITS            | 129537
+ READ MISSES          | 1537
+ READ AHEAD TRANSFERS | 16128
+ READ BLOCKS          | 66049
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 123
+ WRITE BLOCKS         | 1932
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+
+format with 2 sectors per cluster
+write 33554432 in 47.38s (691.59KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 1024
+ READ HITS            | 38093
+ READ MISSES          | 314
+ READ AHEAD TRANSFERS | 4
+ READ BLOCKS          | 330
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 2076
+ WRITE BLOCKS         | 32170
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+read 33554432 in 22.31s (1468.94KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 1024
+ READ HITS            | 97922
+ READ MISSES          | 385
+ READ AHEAD TRANSFERS | 8128
+ READ BLOCKS          | 32897
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 57
+ WRITE BLOCKS         | 860
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+
+format with 4 sectors per cluster
+write 33554432 in 26.71s (1226.81KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 2048
+ READ HITS            | 21176
+ READ MISSES          | 85
+ READ AHEAD TRANSFERS | 7
+ READ BLOCKS          | 113
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 1068
+ WRITE BLOCKS         | 16044
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+read 33554432 in 13.31s (2461.33KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 2048
+ READ HITS            | 81828
+ READ MISSES          | 97
+ READ AHEAD TRANSFERS | 4080
+ READ BLOCKS          | 16417
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 33
+ WRITE BLOCKS         | 474
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+
+format with 8 sectors per cluster
+write 33554432 in 16.01s (2047.06KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 4096
+ READ HITS            | 12656
+ READ MISSES          | 41
+ READ AHEAD TRANSFERS | 6
+ READ BLOCKS          | 65
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 579
+ WRITE BLOCKS         | 8046
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+read 33554432 in 8.33s (3934.01KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 4096
+ READ HITS            | 73712
+ READ MISSES          | 25
+ READ AHEAD TRANSFERS | 2044
+ READ BLOCKS          | 8201
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 16
+ WRITE BLOCKS         | 200
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+
+format with 16 sectors per cluster
+write 33554432 in 10.96s (2990.86KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 8192
+ READ HITS            | 8422
+ READ MISSES          | 11
+ READ AHEAD TRANSFERS | 0
+ READ BLOCKS          | 11
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 333
+ WRITE BLOCKS         | 4096
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+read 33554432 in 6.46s (5073.91KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 8192
+ READ HITS            | 69642
+ READ MISSES          | 7
+ READ AHEAD TRANSFERS | 1023
+ READ BLOCKS          | 4099
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 8
+ WRITE BLOCKS         | 66
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+
+format with 32 sectors per cluster
+write 33554432 in 7.38s (4438.84KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 16384
+ READ HITS            | 6299
+ READ MISSES          | 6
+ READ AHEAD TRANSFERS | 1
+ READ BLOCKS          | 10
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 221
+ WRITE BLOCKS         | 2128
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+read 33554432 in 5.44s (6025.95KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 16384
+ READ HITS            | 67616
+ READ MISSES          | 1
+ READ AHEAD TRANSFERS | 513
+ READ BLOCKS          | 2049
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 4
+ WRITE BLOCKS         | 13
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+
+format with 64 sectors per cluster
+write 33554432 in 7.27s (4506.34KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 32768
+ READ HITS            | 5248
+ READ MISSES          | 73
+ READ AHEAD TRANSFERS | 0
+ READ BLOCKS          | 73
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 140
+ WRITE BLOCKS         | 1085
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------
+read 33554432 in 5.04s (6505.46KiB/s)
+-------------------------------------------------------------------------------
+                               DEVICE STATISTICS
+----------------------+--------------------------------------------------------
+ MEDIA BLOCK SIZE     | 512
+ MEDIA BLOCK COUNT    | 29158400
+ BLOCK SIZE           | 32768
+ READ HITS            | 66624
+ READ MISSES          | 1
+ READ AHEAD TRANSFERS | 257
+ READ BLOCKS          | 1025
+ READ ERRORS          | 0
+ WRITE TRANSFERS      | 5
+ WRITE BLOCKS         | 13
+ WRITE ERRORS         | 0
+----------------------+--------------------------------------------------------

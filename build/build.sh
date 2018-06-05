@@ -69,3 +69,9 @@ echo "#define GRISP_TOOLCHAIN_REVISION \"$(git rev-parse HEAD)\"" > \
 	"${PREFIX}/${TARGET}/${BSP_NAME}/lib/include/grisp/grisp-buildinfo.h"
 echo "-define(GRISP_TOOLCHAIN_REVISION, \"$(git rev-parse HEAD)\")." > \
 	"${PREFIX}/grisp_buildinfo.hrl"
+
+cd "${PROJECTDIR}/grisp-bootloader" && make clean all
+cd "${PROJECTDIR}/grisp-fatbench" && make clean all
+cd "${PROJECTDIR}/grisp-rtems-hw-test" && make clean all
+cd "${PROJECTDIR}/grisp-sd-sample" && make clean all
+cd "${PROJECTDIR}/grisp-simple-sample" && make clean all
