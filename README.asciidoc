@@ -4,8 +4,7 @@ GRISP
 
 == Prerequisites
 
-- the +xz+ decompression tool needs to be installed and because of a bug in the
-  buildsystem its expected in +/usr/local/bin/xz+
+- the +xz+ decompression tool needs to be installed
 - the +zlib+ development files are necessary
 - +bison+, +flex+ and +texinfo+
 - to check for some of RTEMS source builders prerequisites
