@@ -1,3 +1,4 @@
 build/*.log
 b-*
 rtems-install
+*.tar.gz
