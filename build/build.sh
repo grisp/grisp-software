@@ -64,7 +64,7 @@ cd "${PROJECTDIR}"
 "${SCRIPTDIR}/build-libinih.sh"
 "${SCRIPTDIR}/build-libgrisp.sh"
 
-echo "${TOOLCHAIN_REVISION}" > "${PREFIX}/TOOLCHAIN_REVISION"
+echo "${TOOLCHAIN_REVISION}" > "${PREFIX}/GRISP_TOOLCHAIN_REVISION"
 echo "#define GRISP_TOOLCHAIN_REVISION \"${TOOLCHAIN_REVISION}\"" > \
 	"${PREFIX}/${TARGET}/${BSP_NAME}/lib/include/grisp/grisp-buildinfo.h"
 echo "-define(GRISP_TOOLCHAIN_REVISION, \"${TOOLCHAIN_REVISION}\")." > \
