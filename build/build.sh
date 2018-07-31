@@ -64,10 +64,10 @@ cd "${PROJECTDIR}"
 "${SCRIPTDIR}/build-libinih.sh"
 "${SCRIPTDIR}/build-libgrisp.sh"
 
-echo "$(git rev-parse HEAD)" > "${PREFIX}/buildrev"
-echo "#define GRISP_TOOLCHAIN_REVISION \"$(git rev-parse HEAD)\"" > \
+echo "${TOOLCHAIN_REVISION}" > "${PREFIX}/TOOLCHAIN_REVISION"
+echo "#define GRISP_TOOLCHAIN_REVISION \"${TOOLCHAIN_REVISION}\"" > \
 	"${PREFIX}/${TARGET}/${BSP_NAME}/lib/include/grisp/grisp-buildinfo.h"
-echo "-define(GRISP_TOOLCHAIN_REVISION, \"$(git rev-parse HEAD)\")." > \
+echo "-define(GRISP_TOOLCHAIN_REVISION, \"${TOOLCHAIN_REVISION}\")." > \
 	"${PREFIX}/grisp_buildinfo.hrl"
 
 cd "${PROJECTDIR}/grisp-bootloader" && make clean all

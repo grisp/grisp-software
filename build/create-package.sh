@@ -20,7 +20,8 @@ case "$PLATFORM" in
 esac
 
 PACKAGE_OS="${PLATFORM}-${VERSION}"
+PACKAGE_ID="${TARGET}_${PACKAGE_OS}_${TOOLCHAIN_REVISION}"
 
-PACKAGE_NAME="grisp_toolchain_${TARGET}_${PACKAGE_OS}.tar.gz"
+PACKAGE_NAME="grisp_toolchain_${PACKAGE_ID}.tar.gz"
 
 tar -czf "${PACKAGE_NAME}" -C "${PREFIX}" .
