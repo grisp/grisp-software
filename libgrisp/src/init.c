@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 embedded brains GmbH.  All rights reserved.
+ * Copyright (c) 2016, 2018 embedded brains GmbH.  All rights reserved.
  *
  *  embedded brains GmbH
  *  Dornierstr. 4
@@ -318,4 +318,12 @@ grisp_wlan_power_down(void)
 {
 	const Pin wlan_en = GRISP_WLAN_EN;
 	PIO_Set(&wlan_en);
+}
+
+rtems_task_priority
+rtems_bsd_get_task_priority(const char *name)
+{
+
+	(void)name;
+	return (100);
 }
