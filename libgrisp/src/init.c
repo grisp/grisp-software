@@ -327,3 +327,11 @@ rtems_bsd_get_task_priority(const char *name)
 	(void)name;
 	return (100);
 }
+
+size_t
+rtems_bsd_get_task_stack_size(const char *name)
+{
+
+	(void)name;
+	return 8 * 1024;
+}
