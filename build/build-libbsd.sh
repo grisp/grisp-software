@@ -55,15 +55,15 @@ then
 	fi
 fi
 
-waf configure \
+./waf configure \
 	--prefix="${PREFIX}" \
 	--rtems-bsps="${RTEMS_CPU}/${BSP_NAME}" \
 	--buildset="${SCRIPTDIR}/libbsd-buildset.ini"
-waf
+./waf
 
 if [ $DO_INSTALL -ne 0 ]
 then
-	waf install
+	./waf install
 fi
 
 if [ "$BSP_NAME" = "atsamv" ]
