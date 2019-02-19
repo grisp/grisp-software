@@ -1,7 +1,9 @@
 GRISP
 =====
-:toc:
 
+image:https://circleci.com/gh/grisp/grisp-software/tree/master.svg?style=svg["CircleCI", link="https://circleci.com/gh/grisp/grisp-software/tree/master"]
+
+:toc:
 == Prerequisites
 
 - the +xz+ decompression tool needs to be installed
