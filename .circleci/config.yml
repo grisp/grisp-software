@@ -21,6 +21,13 @@ jobs:
           - run:
               command: cd $TOOLCHAIN_PATH; ./build/build.sh
               no_output_timeout: 90m
+          - run:
+              command: |
+                mkdir -p /tmp/rsb-reports
+                cp $TOOLCHAIN_PATH/rtems-source-builder/rtems/rsb-report*  /tmp/rsb-reports
+              when: on_fail
+          - store_artifacts:
+              path: /tmp/rsb-reports
           - persist_to_workspace:
               root: /opt
               paths:
