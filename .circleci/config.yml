@@ -1,6 +1,8 @@
 version: 2.1
+orbs:
+  grisp: grisp/grisp@0.0.2
 jobs:
-    build:
+    build-toolchain:
         docker:
           - image: 'opensuse:leap'
         steps:
@@ -33,7 +35,24 @@ jobs:
               root: /opt
               paths:
                 - grisp/*/*/*/rtems-install
-    deploy:
+    build-otp:
+      docker:
+        - image: 'opensuse:leap'
+      steps:
+        - grisp/install-erlang
+        - grisp/install-rebar3
+        - attach_workspace:
+            at: /opt
+        - grisp/create-grisp-project:
+            build-otp: true
+            deploy-destination: '/tmp/deploy'
+        - run:
+            command: source ~/.bashrc && rebar3 grisp build
+            working_directory: /root/ciproject
+        - run:
+            command: source ~/.bashrc && rebar3 grisp deploy -v 0.1.0 -n ciproject
+            working_directory: /root/ciproject
+    deploy-toolchain:
         docker:
           - image: 'opensuse:leap'
         steps:
@@ -50,7 +69,11 @@ workflows:
     version: 2
     build-deploy:
         jobs:
-          - build
-          - deploy:
+          - build-toolchain
+          - build-otp:
               requires:
-                - build
+                - build-toolchain          
+          - deploy-toolchain:
+              requires:
+                - build-toolchain
+                - build-otp
