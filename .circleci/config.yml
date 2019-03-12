@@ -25,6 +25,7 @@ jobs:
               command: |
                 mkdir -p /tmp/rsb-reports
                 cp $TOOLCHAIN_PATH/rtems-source-builder/rtems/rsb-report*  /tmp/rsb-reports
+                dmesg > /tmp/rsb-reports/dmesg_output.txt
               when: on_fail
           - store_artifacts:
               path: /tmp/rsb-reports
