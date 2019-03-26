@@ -1,11 +1,11 @@
 [submodule "rtems"]
 	path = rtems
-	url = https://github.com/grisp/rtems
-	branch = grisp-20171025-patches
+	url = git://git.rtems.org/rtems.git
+	branch = master
 [submodule "rtems-libbsd"]
 	path = rtems-libbsd
-	url = https://github.com/grisp/rtems-libbsd
-	branch = grisp
+	url = git://git.rtems.org/rtems-libbsd.git
+	branch = 5-freebsd-12
 [submodule "rtems-source-builder"]
 	path = rtems-source-builder
 	url = git://git.rtems.org/rtems-source-builder.git
