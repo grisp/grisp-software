@@ -14,6 +14,8 @@ PROJECTDIR="${SCRIPTDIR}/../"
 . "${SCRIPTDIR}/configuration.sh"
 export PATH="${PREFIX}/bin:${PATH}"
 
+WAF="${PROJECTDIR}/rtems-libbsd/waf"
+
 cd "${LIBBSD_SOURCE_DIR}"
 
 if [ "$BSP_NAME" = "atsamv" ]
@@ -55,14 +57,15 @@ then
 	fi
 fi
 
-waf configure \
+python3 $WAF configure \
 	--prefix="${PREFIX}" \
-	--rtems-bsps="${RTEMS_CPU}/${BSP_NAME}"
-waf
+	--rtems-bsps="${RTEMS_CPU}/${BSP_NAME}" \
+	--buildset="${SCRIPTDIR}/libbsd-buildset.ini"
+python3 $WAF
 
 if [ $DO_INSTALL -ne 0 ]
 then
-	waf install
+	python3 $WAF install
 fi
 
 if [ "$BSP_NAME" = "atsamv" ]

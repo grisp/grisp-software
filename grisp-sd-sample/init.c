@@ -47,13 +47,14 @@
 #include <machine/rtems-bsd-commands.h>
 
 #include <bsp.h>
+#include <bsp/stackalloc.h>
 
 #include <grisp/pin-config.h>
 #include <grisp/led.h>
 #include <grisp/init.h>
 
-#define STACK_SIZE_INIT_TASK	(64 * 1024)
-#define STACK_SIZE_SHELL	(64 * 1024)
+#define STACK_SIZE_INIT_TASK	(16 * 1024)
+#define STACK_SIZE_SHELL	(16 * 1024)
 
 #define PRIO_SHELL		150
 #define PRIO_LED_TASK		(RTEMS_MAXIMUM_PRIORITY - 1)
@@ -186,9 +187,9 @@ Init(rtems_task_argument arg)
 	grisp_led_set1(false, false, false);
 	grisp_led_set2(true, false, false);
 	puts("\nGRISP RTEMS SD Demo\n");
-	grisp_init_sd_card();
 	grisp_init_lower_self_prio();
 	grisp_init_libbsd();
+	grisp_init_sd_card();
 
 	/* Wait for the SD card */
 	grisp_led_set2(true, false, true);

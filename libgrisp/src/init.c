@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 embedded brains GmbH.  All rights reserved.
+ * Copyright (c) 2016, 2018 embedded brains GmbH.  All rights reserved.
  *
  *  embedded brains GmbH
  *  Dornierstr. 4
@@ -37,12 +37,11 @@
 #include <unistd.h>
 #include <string.h>
 
-#include <machine/rtems-bsd-commands.h>
-
 #include <rtems.h>
 #include <rtems/bsd/bsd.h>
 #include <rtems/bdbuf.h>
 #include <rtems/console.h>
+#include <rtems/dhcpcd.h>
 #include <rtems/irq.h>
 #include <rtems/malloc.h>
 #include <rtems/media.h>
@@ -149,74 +148,29 @@ grisp_init_sd_card(void)
 	assert(sc == RTEMS_SUCCESSFUL);
 }
 
-static void
-grisp_init_network_ifconfig_lo0(void)
+void
+grisp_init_dhcpcd_with_config(rtems_task_priority prio, const char *cfile)
 {
-	int exit_code;
-	char *lo0[] = {
-		"ifconfig",
-		"lo0",
-		"inet",
-		"127.0.0.1",
-		"netmask",
-		"255.255.255.0",
-		NULL
-	};
-	char *lo0_inet6[] = {
-		"ifconfig",
-		"lo0",
-		"inet6",
-		"::1",
-		"prefixlen",
-		"128",
-		"alias",
-		NULL
-	};
+	rtems_dhcpcd_config config;
+	rtems_status_code sc;
+	int argc = 1;
+	char *argv[] = {"dhcpcd", NULL, NULL, NULL};
+	char *file = NULL;
 
-	exit_code = rtems_bsd_command_ifconfig(RTEMS_BSD_ARGC(lo0), lo0);
-	assert(exit_code == EX_OK);
-
-	exit_code = rtems_bsd_command_ifconfig(RTEMS_BSD_ARGC(lo0_inet6), lo0_inet6);
-	assert(exit_code == EX_OK);
-}
-
-static void
-network_dhcpcd_task(rtems_task_argument arg)
-{
-	int exit_code;
-	const char *cconf = (const char*) arg;
-	char* conf = NULL;
-	if (cconf && (access(cconf, F_OK | R_OK ) != -1) && (conf = strdup(cconf))) {
-		char *dhcpcd[] = {"dhcpcd", "-f", conf, NULL};
-		exit_code = rtems_bsd_command_dhcpcd(RTEMS_BSD_ARGC(dhcpcd), dhcpcd);
-		free(conf);
-	} else {
-		char *dhcpcd[] = {"dhcpcd", NULL};
-		exit_code = rtems_bsd_command_dhcpcd(RTEMS_BSD_ARGC(dhcpcd), dhcpcd);
+	if (cfile != NULL && access(cfile, F_OK | R_OK ) == 0 &&
+	    (file = strdup(cfile))) {
+		argc = 3;
+		argv[1] = "-f";
+		argv[2] = file;
 	}
 
-	assert(exit_code == EXIT_SUCCESS);
+	memset(&config, 0, sizeof(config));
+	config.priority = prio;
+	config.argc = argc;
+	config.argv = argv;
 
-	rtems_task_delete(RTEMS_SELF);
-}
-
-void
-grisp_init_dhcpcd_with_config(rtems_task_priority prio, const char *conf)
-{
-	rtems_status_code sc;
-	rtems_id id;
-
-	sc = rtems_task_create(
-		rtems_build_name('D', 'H', 'C', 'P'),
-		prio,
-		2 * RTEMS_MINIMUM_STACK_SIZE,
-		RTEMS_DEFAULT_MODES,
-		RTEMS_FLOATING_POINT,
-		&id
-	);
-	assert(sc == RTEMS_SUCCESSFUL);
-
-	sc = rtems_task_start(id, network_dhcpcd_task, (rtems_task_argument) conf);
+	sc = rtems_dhcpcd_start(&config);
+	free(file);
 	assert(sc == RTEMS_SUCCESSFUL);
 }
 
@@ -230,13 +184,15 @@ void
 grisp_init_libbsd(void)
 {
 	rtems_status_code sc;
+	int exit_code;
 
 	grisp_saf1761_basic_init();
 
 	sc = rtems_bsd_initialize();
 	assert(sc == RTEMS_SUCCESSFUL);
 
-	grisp_init_network_ifconfig_lo0();
+	exit_code = rtems_bsd_ifconfig_lo0();
+	assert(exit_code == EX_OK);
 	grisp_wlan_power_up();
 
 	/* Let the callout timer allocate its resources */
@@ -362,4 +318,20 @@ grisp_wlan_power_down(void)
 {
 	const Pin wlan_en = GRISP_WLAN_EN;
 	PIO_Set(&wlan_en);
+}
+
+rtems_task_priority
+rtems_bsd_get_task_priority(const char *name)
+{
+
+	(void)name;
+	return (100);
+}
+
+size_t
+rtems_bsd_get_task_stack_size(const char *name)
+{
+
+	(void)name;
+	return 8 * 1024;
 }
