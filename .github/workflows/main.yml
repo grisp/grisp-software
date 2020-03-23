@@ -34,7 +34,8 @@ jobs:
         run: |
           ./build/build.sh
       - name: Upload build result
+        if: always()
         uses: actions/upload-artifact@v1
         with:
           name: log
-          path: rsb-report-*.txt
+          path: rtems-source-builder/rtems/rsb-report-*.txt
