@@ -8,14 +8,13 @@ on:
 
 jobs:
   build:
+    timeout-minutes: 120
     strategy:
       matrix:
         os:
           - ubuntu-latest
           - macOS-latest
-
     runs-on: ${{ matrix.os }}
-
     steps:
       - uses: actions/checkout@v2
       - name: Install Ubuntu dependencies
