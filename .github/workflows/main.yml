@@ -18,6 +18,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Install Ubuntu dependencies
+        run: |
+          apt install flex
+          apt install bison
+          apt install makeinfo
+        if: matrix.os == ubuntu-latest
       - name: Build toolchain
         run: |
           ./build/build.sh
