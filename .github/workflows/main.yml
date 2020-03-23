@@ -24,6 +24,12 @@ jobs:
           sudo apt-get install bison
           sudo apt-get install texinfo
         if: matrix.os == 'ubuntu-latest'
+      - name: Install macOS dependencies
+        run: |
+          brew install flex
+          brew install bison
+          brew install texinfo
+        if: matrix.os == 'macOS-latest'
       - name: Build toolchain
         run: |
           ./build/build.sh
