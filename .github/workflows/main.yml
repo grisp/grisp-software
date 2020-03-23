@@ -23,7 +23,7 @@ jobs:
           apt install flex
           apt install bison
           apt install makeinfo
-        if: matrix.os == "ubuntu-latest"
+        if: matrix.os == 'ubuntu-latest'
       - name: Build toolchain
         run: |
           ./build/build.sh
