@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Ubuntu dependencies
+        run: |
+          sudo apt-get install build-essential
+          sudo apt-get install flex
+          sudo apt-get install bison
+          sudo apt-get install texinfo
+        if: matrix.os == 'ubuntu-latest'
+      - name: Install macOS dependencies
+        run: |
+          brew install flex
+          brew install bison
+          brew install texinfo
+        if: matrix.os == 'macOS-latest'
+      - name: Build toolchain
+        run: |
+          ./build/build.sh
+      - name: Upload build result
+        if: always()
+        uses: actions/upload-artifact@v2-preview
+        with:
+          name: log
+          path: rtems-source-builder/rtems/rsb-report-*.txt
