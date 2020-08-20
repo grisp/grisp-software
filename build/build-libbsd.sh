@@ -57,7 +57,8 @@ fi
 
 waf configure \
 	--prefix="${PREFIX}" \
-	--rtems-bsps="${RTEMS_CPU}/${BSP_NAME}"
+	--rtems-bsps="${RTEMS_CPU}/${BSP_NAME}" \
+	--buildset="${PROJECTDIR}/build/src/libbsd.ini"
 waf
 
 if [ $DO_INSTALL -ne 0 ]
