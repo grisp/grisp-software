@@ -55,6 +55,7 @@ cd "openocd-0.10.0"
 	--disable-buspirate \
 	--disable-sysfsgpio \
 	--disable-minidriver-dummy \
-	--disable-remote-bitbang
+	--disable-remote-bitbang \
+	--disable-werror
 
 make -j `nproc` install
