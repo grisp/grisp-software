@@ -41,5 +41,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v2-preview
         with:
-          name: log
+          name: log-${{ github.run_id }}-${{ runner.os }}
           path: rtems-source-builder/rtems/rsb-report-*.txt
