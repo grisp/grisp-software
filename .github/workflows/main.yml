@@ -25,6 +25,7 @@ jobs:
           sudo apt-get install flex
           sudo apt-get install bison
           sudo apt-get install texinfo
+          sudo apt-get install python2.7-dev
         if: matrix.os == 'ubuntu-latest'
       - name: Install macOS dependencies
         run: |
