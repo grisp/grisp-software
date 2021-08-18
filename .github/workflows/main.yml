@@ -32,6 +32,7 @@ jobs:
           brew install flex
           brew install bison
           brew install texinfo
+          brew install python
         if: matrix.os == 'macOS-latest'
       - name: Build toolchain
         run: |
