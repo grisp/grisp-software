@@ -1,0 +1,46 @@
+name: TMP
+
+on:
+  - push
+  - workflow_dispatch
+
+jobs:
+  tmp:
+    timeout-minutes: 120
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Install Ubuntu dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get install build-essential
+          sudo apt-get install flex
+          sudo apt-get install bison
+          sudo apt-get install texinfo
+
+      - name: Install macOS dependencies
+        if: matrix.os == 'macOS-latest'
+        run: |
+          brew install flex
+          brew install bison
+          brew install texinfo
+
+      - name: asdf_install
+        uses: asdf-vm/actions/install@v1
+
+      - name: Test
+        run: |
+          which python
+          python --version
+          ls -lah ~/.asdf

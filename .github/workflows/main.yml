@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Install Ubuntu dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get install build-essential
+          sudo apt-get install flex
+          sudo apt-get install bison
+          sudo apt-get install texinfo
+
+      - name: Install macOS dependencies
+        if: matrix.os == 'macOS-latest'
+        run: |
+          brew install flex
+          brew install bison
+          brew install texinfo
+
+      - name: asdf_install
+        uses: asdf-vm/actions/install@v1
+
+      - name: Set LD_LIBRARY_PATH
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}:${{ env.ASDF_DATA_DIR }}/installs/python/2.7.18/lib" >> $GITHUB_ENV
+
+      - name: Build toolchain
+        run: |
+          ./build/build.sh
+
+      - name: Upload build result
+        if: always()
+        uses: actions/upload-artifact@v2-preview
+        with:
+          name: log-${{ github.run_id }}-${{ runner.os }}
+          path: rtems-source-builder/rtems/rsb-report-*.txt
