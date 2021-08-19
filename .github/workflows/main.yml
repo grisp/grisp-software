@@ -41,6 +41,7 @@ jobs:
 
       - name: Build toolchain
         run: |
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.asdf/installs/python/2.7.18/lib
           ./build/build.sh
 
       - name: Upload build result
