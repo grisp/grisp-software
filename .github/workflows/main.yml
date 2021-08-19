@@ -39,9 +39,13 @@ jobs:
       - name: asdf_install
         uses: asdf-vm/actions/install@v1
 
+      - name: Set LD_LIBRARY_PATH
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}:${{ env.ASDF_DATA_DIR }}/installs/python/2.7.18/lib" >> $GITHUB_ENV
+
       - name: Build toolchain
         run: |
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.asdf/installs/python/2.7.18/lib
           ./build/build.sh
 
       - name: Upload build result
